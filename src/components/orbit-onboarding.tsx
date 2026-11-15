@@ -33,7 +33,7 @@ export function ProfileForm({ initial, submitLabel, onSaved }: { initial?: Profi
   </form>;
 }
 
-function NewAccountForm({ onCancel }: { onCancel?: () => void }) {
+function NewAccountForm({ onCancel }: { onCancel?: (() => void) | undefined }) {
   const [name, setName] = useState(''); const [pw, setPw] = useState(''); const [confirm, setConfirm] = useState('');
   const [touched, setTouched] = useState(false); const [busy, setBusy] = useState(false);
   const errors = validateNewAccount(name, pw, confirm, listAccounts()); const valid = Object.keys(errors).length === 0;
