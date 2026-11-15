@@ -9,7 +9,8 @@ import { significantDays } from '@/lib/ai/memory';
 import { localLlmProvider, preferredProviderId, providers, setPreferredProvider } from '@/lib/ai/providers';
 import { dimensionLabels, sourceLabels, type Analysis, type Dimension } from '@/lib/ai/types';
 import { useWellbeing } from '@/lib/ai/wellbeing';
-import { formatDate } from '@/lib/orbit';
+import { formatDate, getVoiceNotes, todayDate } from '@/lib/orbit';
+import { buildActionPlans, computeTrends, type DimTrend, type TrendReport } from '@/lib/ai/insights';
 import { OrbitChart } from './orbit-chart';
 
 const icons: Record<Dimension, typeof Moon> = { sleep: Moon, stress: Leaf, energy: Zap, mood: Smile, connection: Users, cognitive: Activity };
@@ -59,7 +60,13 @@ export function EscalationPanel({ escalation }: { escalation: Escalation }) {
     {escalation.falseAlarmReview && <small>Your false-alarm note is recorded. The alert stays open until a professional reviews it.</small>}
     <details><summary>Activity log ({escalation.attempts} attempt{escalation.attempts === 1 ? '' : 's'})</summary>{escalation.log.map((l, i) => <p key={i}>{new Date(l.at).toLocaleString()} · {l.text}</p>)}</details></section>;
 }
-function contextFor(a: Analysis | null) { return a ? `${a.summary}\n${a.dimensions.map(d => `${d.dimension}: ${d.insufficientData ? 'not enough data' : d.trend}`).join(', ')}\nSuggestions: ${a.recommendations.join(' ')}` : 'No analysis yet.'; }
+function contextFor(a: Analysis | null, r: TrendReport | null) { return a ? `${a.summary}\n${a.dimensions.map(d => `${d.dimension}: ${d.insufficientData ? 'not enough data' : d.trend}`).join(', ')}\nTrends: ${r?.trends.map(t => t.statement).join(' ') ?? ''}\nPatterns: ${r?.patterns.map(p => p.text).join(' ') ?? ''}\nGive specific, practical steps when asked for advice.` : 'No analysis yet.'; }
+function Spark({ t }: { t: DimTrend }) {
+  const pts = t.points.slice(-28); if (pts.length < 2) return <svg className="trend-spark" viewBox="0 0 100 30"/>;
+  const path = pts.map((p, i) => `${i ? 'L' : 'M'}${(i / (pts.length - 1)) * 100},${30 - ((p.value - 1) / 4) * 28 - 1}`).join(' ');
+  return <svg className={`trend-spark spark-${t.direction}`} viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden><path d={path} fill="none" strokeWidth="2" vectorEffect="non-scaling-stroke"/></svg>;
+}
+const dirLabel = { improving: '↑ Improving', declining: '↓ Declining', steady: '→ Steady', unknown: 'Not enough data' } as const;
 export function Companion() {
   const { analysis, baseline, memory, escalation, paused, entries } = useWellbeing(); const { status } = useLlmStatus();
   const [chat, setChat] = useState<{ role: 'user' | 'assistant'; text: string }[]>([]); const [q, setQ] = useState(''); const [thinking, setThinking] = useState(false);
@@ -68,10 +75,14 @@ export function Companion() {
     if (paused) { setChat(c => [...c, { role: 'assistant', text: 'While support is being arranged I’m not giving my own wellbeing advice. Please reach your crew or flight surgeon through your mission channel.' }]); return; }
     if (status.state !== 'ready') { setChat(c => [...c, { role: 'assistant', text: 'Questions need the on-device AI. Load it above to chat. It works offline once downloaded.' }]); return; }
     setThinking(true);
-    try { const a = await localLlmProvider.chat!(question, contextFor(analysis)); setChat(c => [...c, { role: 'assistant', text: a }]); }
+    try { const a = await localLlmProvider.chat!(question, contextFor(analysis, report)); setChat(c => [...c, { role: 'assistant', text: a }]); }
     catch { setChat(c => [...c, { role: 'assistant', text: 'I couldn’t answer just now. Please try again.' }]); } finally { setThinking(false); }
   }
   const sig = significantDays(entries, baseline);
+  const [voice, setVoice] = useState<{ date: string; transcript?: string }[]>([]);
+  useEffect(() => { getVoiceNotes().then(setVoice).catch(() => {}); }, [entries]);
+  const report = computeTrends(entries, todayDate(), voice);
+  const plans = buildActionPlans(report, (analysis?.dimensions ?? []).filter(d => d.trend === 'lower').map(d => d.dimension));
   return <>
     <div className="page-heading"><div><div className="eyebrow">YOUR WELLBEING COMPANION</div><h1>AI companion</h1><p>Summaries and gentle suggestions, based on your check-ins and voice reflections.</p></div><span className="subtle-chip">{analysis?.providerLabel ?? 'Starting…'}</span></div>
     {escalation && escalation.stage !== 'none' && <EscalationPanel escalation={escalation}/>}
@@ -80,16 +91,27 @@ export function Companion() {
     <div className="companion-grid">
       <section className="surface"><div className="panel-title"><div><h3>Today’s summary</h3><p>{analysis ? `Updated ${new Date(analysis.generatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}</p></div>{analysis?.attention && <span className="inline-pill">Needs attention</span>}</div>
         <p>{analysis?.summary}</p>
-        <h4 className="companion-sub">Suggestions, if they suit you</h4>
-        {paused ? <p className="muted">Paused while a professional is being reached.</p> : <ul className="rec-list">{analysis?.recommendations.map(r => <li key={r}><Sparkles size={14}/>{r}</li>)}</ul>}
+        <h4 className="companion-sub">What stands out</h4>
+        {report.patterns.length ? <ul className="rec-list">{report.patterns.slice(0, 4).map(p => <li key={p.text}><Sparkles size={14}/>{p.text}</li>)}</ul> : <p className="muted">No clear patterns yet. They appear after about two weeks of check-ins.</p>}
       </section>
       <section className="surface chat-panel"><div className="panel-title"><div><h3>Ask about your suggestions</h3><p>Runs on this device. Not a substitute for professional care.</p></div></div>
         <div className="chat-log">{chat.length === 0 && <p className="muted">Try “Why is rest suggested?”</p>}{chat.map((m, i) => <p key={i} className={`chat-msg chat-${m.role}`}>{m.text}</p>)}{thinking && <p className="chat-msg chat-assistant muted">Thinking…</p>}</div>
         <form onSubmit={ask} className="chat-form"><input aria-label="Ask AstraCare" value={q} maxLength={500} onChange={e => setQ(e.target.value)} placeholder="Ask a question…"/><Button size="icon" type="submit" aria-label="Send"><Send size={16}/></Button></form>
       </section>
     </div>
+    <section className="surface"><div className="panel-title"><div><h3>Your action plan</h3><p>Specific steps based on your own trends. Optional — adapt them to your schedule.</p></div></div>
+      {paused ? <p className="muted">Paused while a professional is being reached.</p> : plans.length ? <div className="plan-grid">{plans.map(p => <article key={p.id} className="plan-card">
+        <h4>{p.title}</h4><p className="plan-why"><strong>Why: </strong>{p.why}</p>
+        <ol className="plan-steps">{p.steps.map(st => <li key={st}>{st}</li>)}</ol>
+        <p className="plan-meta"><strong>When:</strong> {p.when}</p><p className="plan-meta"><strong>How you’ll know it’s working:</strong> {p.check}</p>
+      </article>)}</div> : <p className="muted">Your action plan appears after at least 5 check-ins.</p>}
+    </section>
+    <section className="surface"><div className="panel-title"><div><h3>Trends over time</h3><p>Last 4 weeks of check-ins, compared week to week ({report.days} check-ins total)</p></div><Brain size={18} className="text-primary"/></div>
+      <div className="trend-grid">{report.trends.map(t => <div key={t.dimension} className="trend-card"><div className="trend-head"><strong>{dimensionLabels[t.dimension]}</strong><span className={`trend-tag trend-${t.direction}`}>{dirLabel[t.direction]}</span></div><Spark t={t}/><p>{t.statement}</p></div>)}</div>
+      {report.patterns.length > 0 && <><h4 className="companion-sub">Patterns found</h4><ul className="rec-list">{report.patterns.map(p => <li key={p.text}><Sparkles size={14}/><span>{p.text} <em className="muted">({p.strength === 'clear' ? 'clear pattern' : 'possible pattern'})</em></span></li>)}</ul></>}
+    </section>
     <div className="companion-grid">
-      <section className="surface"><div className="panel-title"><div><h3>Patterns over time</h3><p>Whether earlier changes improved, continued or worsened</p></div><Brain size={18} className="text-primary"/></div>
+      <section className="surface"><div className="panel-title"><div><h3>Changes being followed</h3><p>Whether earlier changes improved, continued or worsened</p></div><Brain size={18} className="text-primary"/></div>
         {memory.concerns.length ? <ul className="memory-list">{memory.concerns.map(c => <li key={c.dimension + c.since}><strong>{dimensionLabels[c.dimension]}</strong><span>since {formatDate(c.since)}</span><span className={`trend-tag trend-${c.status}`}>{c.status === 'resolved' ? 'Back to usual' : c.status === 'improving' ? 'Improving' : c.status === 'worsening' ? 'Lower than before' : 'Continuing'}</span></li>)}</ul> : <p className="muted">No ongoing changes from your baseline.</p>}
       </section>
       <section className="surface"><div className="panel-title"><div><h3>Days that stood out</h3><p>Compared with your own baseline</p></div></div>
