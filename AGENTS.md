@@ -33,5 +33,8 @@ use the editor.
 - Keep feature views in focused shared components and expose each workspace through a TanStack leaf route; this preserves typed navigation and distinct metadata.
 - For this offline prototype, store journals with immutable original timestamps and revisions in localStorage, and audio Blobs in IndexedDB; this avoids requiring connectivity for capture.
 - Keep healthcare content inaccessible until verified server-enforced authorization exists; a client-side role selector is not a security boundary.
-- Mark insights and sensors as demonstrations until validated longitudinal analysis and real sensor integrations are connected; no diagnosis or clinical inference is performed locally.
+- AI lives in src/lib/ai behind an AnalysisProvider interface (on-device LLM, rule-based, future remote); confidence, insufficient-data and risk always come from the deterministic layer so an LLM can't override safety or invent certainty.
+- Sensor data flows only through the SensorSource registry in src/lib/sensors; the prototype source must stay flagged simulated so generated readings are never shown as real measurements.
+- Escalation only reaches 'confirmed' with a real channel confirmation; simulated mode never claims a professional took over.
+- Only one official journal check-in per date; supplementary notes are separate entries, and all edits keep revisions.
 - Cache the application shell using a same-origin service worker; secure synchronization and encrypted mission storage remain future production work.

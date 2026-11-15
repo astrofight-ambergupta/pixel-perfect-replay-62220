@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-export type Profile = { name: string; birthDate: string; gender: string };
+export type Profile = { name: string; birthDate: string; gender: string; checkInTime: string; onboardedAt?: string };
 export const genderOptions = ['Female', 'Male', 'Non-binary', 'Prefer not to say', 'Self-describe'] as const;
 const KEY = 'orbit-profile-v1';
 const EVENT = 'orbit-profile-change';
@@ -12,6 +12,7 @@ export function validateProfile(p: Profile, today: string): Partial<Record<keyof
   if (!/^\d{4}-\d{2}-\d{2}$/.test(p.birthDate)) e.birthDate = 'Please enter your birth date.';
   else if (p.birthDate > today) e.birthDate = 'Birth date cannot be in the future.';
   if (!p.gender.trim()) e.gender = 'Please choose an option.';
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(p.checkInTime ?? '')) e.checkInTime = 'Please choose a daily check-in time.';
   return e;
 }
 export function initials(name: string) { return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase()).join('') || '··'; }
@@ -22,7 +23,7 @@ export function saveProfile(p: Profile | null) {
 export function useProfile() {
   const [state, setState] = useState<{ ready: boolean; profile: Profile | null }>({ ready: false, profile: null });
   useEffect(() => {
-    const read = () => { let profile: Profile | null = null; try { profile = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch {} setState({ ready: true, profile }); };
+    const read = () => { let profile: Profile | null = null; try { profile = JSON.parse(localStorage.getItem(KEY) || 'null'); if (profile && !profile.checkInTime) profile = { ...profile, checkInTime: '20:00' }; } catch {} setState({ ready: true, profile }); };
     read(); window.addEventListener(EVENT, read); return () => window.removeEventListener(EVENT, read);
   }, []);
   return state;

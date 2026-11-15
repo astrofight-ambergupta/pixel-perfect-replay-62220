@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 
-export type Journal = { id: string; date: string; day: number; createdAt: string; updatedAt: string; ratings: Record<string, number>; reflections: Record<string, string>; revisions: { savedAt: string; ratings: Record<string, number>; reflections: Record<string, string> }[] };
-export type VoiceNote = { id: string; date: string; prompt: string; duration: number; phase: string; audio: Blob };
+export type JournalKind = 'official' | 'supplementary';
+export type Journal = { id: string; kind?: JournalKind; note?: string; date: string; day: number; createdAt: string; updatedAt: string; ratings: Record<string, number>; reflections: Record<string, string>; revisions: { savedAt: string; ratings: Record<string, number>; reflections: Record<string, string> }[] };
+export type VoiceNote = { id: string; date: string; prompt: string; duration: number; phase: string; audio: Blob; transcript?: string };
 export const ratingQuestions = [
   ['Mood', 'How would you describe your overall mood today?'],
   ['Stress', 'How would you describe your current stress level?'],
@@ -28,6 +29,12 @@ export const demoJournals: Journal[] = [13, 12, 11, 10, 9, 8, 7].map((day, i) =>
 export function reviseJournal(original: Journal, ratings: Journal['ratings'], reflections: Journal['reflections'], now: string): Journal {
   return { ...original, ratings, reflections, updatedAt: now, revisions: [...original.revisions, { savedAt: original.updatedAt, ratings: original.ratings, reflections: original.reflections }] };
 }
+export const isOfficial = (e: Journal) => (e.kind ?? 'official') === 'official';
+/** One official check-in per date; supplementary notes and revisions of the same entry are always allowed. */
+export function canSaveJournal(entries: Journal[], entry: Journal) {
+  if (!isOfficial(entry)) return true;
+  return !entries.some(e => isOfficial(e) && e.date === entry.date && e.id !== entry.id);
+}
 export function useJournals() {
   const [entries, setEntries] = useState<Journal[]>(demoJournals);
   const [ready, setReady] = useState(false);
@@ -35,10 +42,13 @@ export function useJournals() {
   useEffect(() => {
     try { const saved = localStorage.getItem('orbit-journals-v1'); if (saved) setEntries(JSON.parse(saved)); } catch { setError('Your saved journal could not be loaded. Please do not clear this device’s storage.'); }
     setReady(true);
+    const sync = () => { try { const saved = localStorage.getItem('orbit-journals-v1'); if (saved) setEntries(JSON.parse(saved)); } catch {} };
+    window.addEventListener('orbit-journals-change', sync); return () => window.removeEventListener('orbit-journals-change', sync);
   }, []);
   function save(entry: Journal) {
-    const next = [entry, ...entries.filter(e => e.id !== entry.id)].sort((a, b) => b.date.localeCompare(a.date));
-    try { localStorage.setItem('orbit-journals-v1', JSON.stringify(next)); setEntries(next); return true; }
+    if (!canSaveJournal(entries, entry)) { setError('Today’s official check-in is already saved. Add a supplementary note instead.'); return false; }
+    const next = [entry, ...entries.filter(e => e.id !== entry.id)].sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+    try { localStorage.setItem('orbit-journals-v1', JSON.stringify(next)); setEntries(next); window.dispatchEvent(new Event('orbit-journals-change')); return true; }
     catch { setError('This device could not save your entry. Free up storage and try again.'); return false; }
   }
   return { entries, ready, save, error };
@@ -61,6 +71,7 @@ export async function saveVoiceNote(note: VoiceNote) {
 }
 export function sensorObservations(days: number) { return Array.from({ length: days === 1 ? 24 : days }, (_, i) => ({ day: i + 1, sleep: +(7.4 + Math.sin(i * .8) * .7).toFixed(1), mood: +(3.8 + Math.sin(i * .55) * .4).toFixed(1), energy: +(3.6 + Math.cos(i * .6) * .5).toFixed(1), heart: Math.round(63 + Math.sin(i * .7) * 7), hrv: Math.round(52 + Math.cos(i * .6) * 8), activity: Math.round(42 + Math.sin(i * .4) * 7), temperature: +(33.2 + Math.sin(i * .7) * .2).toFixed(1), respiration: +(14 + Math.cos(i * .8)).toFixed(1) })); }
 export const chartData = sensorObservations(30);
+export function missionDay(date = todayDate()) { return 144 + Math.round((new Date(`${date}T12:00:00`).getTime() - new Date('2026-11-15T12:00:00').getTime()) / 86400000); }
 export function formatDate(date: string) { return new Date(date.length === 10 ? `${date}T12:00:00` : date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
 export function todayDate() { const date = new Date(); return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
 export function pageHead(title: string, description: string) { return { meta: [{ title: `${title} · ORBIT` }, { name: 'description', content: description }, { property: 'og:title', content: `${title} · ORBIT` }, { property: 'og:description', content: description }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary_large_image' }] }; }

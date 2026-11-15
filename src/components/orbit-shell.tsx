@@ -1,14 +1,17 @@
 import { Link, useRouterState } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { Activity, ArrowUpRight, Bell, BookOpen, ChevronDown, CircleHelp, LayoutDashboard, Menu, Mic, Orbit, Radio, Settings2, ShieldCheck, Sparkles, X } from 'lucide-react';
+import { Activity, ArrowUpRight, Bell, Bot, BookOpen, ChevronDown, CircleHelp, LayoutDashboard, Menu, Mic, Orbit, Radio, Settings2, ShieldCheck, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { OrbitOnboarding } from './orbit-onboarding';
 import { initials, useProfile } from '@/lib/profile';
+import { scheduleDailyReminder } from '@/lib/reminders';
+import { isOfficial, todayDate } from '@/lib/orbit';
 
 const nav = [
   { to: '/', label: 'Overview', icon: LayoutDashboard },
   { to: '/journal', label: 'Daily journal', icon: BookOpen },
   { to: '/voice-notes', label: 'Voice reflections', icon: Mic },
+  { to: '/companion', label: 'AI companion', icon: Bot },
   { to: '/insights', label: 'AI insights', icon: Sparkles },
   { to: '/sensors', label: 'Physiological monitoring', icon: Activity },
   { to: '/timeline', label: 'Mission timeline', icon: Orbit },
@@ -22,6 +25,7 @@ export function OrbitShell({ children }: { children: React.ReactNode }) {
   useEffect(() => { const update = () => setOnline(navigator.onLine); update(); window.addEventListener('online', update); window.addEventListener('offline', update); return () => { window.removeEventListener('online', update); window.removeEventListener('offline', update); }; }, []);
   useEffect(() => setOpen(false), [path]);
   const { ready, profile } = useProfile();
+  useEffect(() => { if (!profile) return; return scheduleDailyReminder(profile, () => { try { return (JSON.parse(localStorage.getItem('orbit-journals-v1') || '[]') as { kind?: 'official' | 'supplementary'; date: string }[]).some(e => isOfficial(e as never) && e.date === todayDate()); } catch { return false; } }); }, [profile?.checkInTime]);
   if (!ready) return <div className="onboard-screen" />;
   if (!profile) return <OrbitOnboarding />;
   const ini = initials(profile.name);
@@ -35,7 +39,7 @@ export function OrbitShell({ children }: { children: React.ReactNode }) {
     </aside>
     {open && <div className="sidebar-backdrop" onClick={() => setOpen(false)}/>}
     <div className="main-shell"><header className="topbar"><div className="breadcrumb"><Button variant="ghost" size="icon" className="mobile-menu" aria-label="Open navigation" onClick={() => setOpen(!open)}><Menu/></Button><span>My workspace</span><span className="breadcrumb-divider">/</span><strong>{path === '/' ? 'Overview' : path.includes('journal') ? 'Daily journal' : path.includes('voice') ? 'Voice reflections' : nav.find(n => n.to === path)?.label || (path === '/settings' ? 'Settings & privacy' : 'Healthcare access')}</strong></div><div className="topbar-right"><span className={`connectivity ${online ? '' : 'offline'}`}><i/>{online ? 'Online' : 'Offline'}<span className="connection-caption"> · {online ? 'Device ready' : 'Saved on device'}</span></span><span className="topbar-divider"/><Button variant="ghost" size="icon" aria-label="Notifications" className="notification-button" onClick={() => setNotifications(!notifications)}><Bell size={19}/><i/></Button><span className="avatar avatar-small">{ini}</span></div></header>
-      {notifications && <div className="notification-panel"><strong>Your updates</strong><p>Your daily check-in is ready.</p><p>Three demonstration wellbeing insights are available.</p><small>All mission data shown is a prototype.</small></div>}
+      {notifications && <div className="notification-panel"><strong>Your updates</strong><p>Daily check-in reminder: {profile.checkInTime}.</p><p>Your Glance Report updates as you check in.</p><small>All mission data shown is a prototype.</small></div>}
       <main className="page-content">{children}</main><footer className="app-footer"><span><ShieldCheck size={13}/>Your space to reflect. Private by design.</span><span>ORBIT <span className="footer-dot">·</span> Demonstration mission</span></footer>
     </div>
     {help && <div className="modal-backdrop"><section className="modal-panel"><Button variant="ghost" size="icon" className="modal-close" aria-label="Close support" onClick={() => setHelp(false)}><X/></Button><CircleHelp className="text-primary"/><h2>Mission support</h2><p>For personal support, contact your designated mission medical team through your approved mission communication channel.</p><p>ORBIT is a demonstration, not an emergency service or a replacement for professional care.</p><Button onClick={() => setHelp(false)}>Understood</Button></section></div>}

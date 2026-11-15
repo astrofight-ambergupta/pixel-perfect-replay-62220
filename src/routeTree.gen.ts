@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CompanionRouteImport } from './routes/companion'
 import { Route as HealthcareRouteImport } from './routes/healthcare'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as JournalRouteImport } from './routes/journal'
@@ -25,6 +26,11 @@ import { Route as VoiceNotesArchiveRouteImport } from './routes/voice-notes_.arc
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompanionRoute = CompanionRouteImport.update({
+  id: '/companion',
+  path: '/companion',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HealthcareRoute = HealthcareRouteImport.update({
@@ -85,6 +91,7 @@ const VoiceNotesArchiveRoute = VoiceNotesArchiveRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/companion': typeof CompanionRoute
   '/healthcare': typeof HealthcareRoute
   '/insights': typeof InsightsRoute
   '/journal': typeof JournalRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/companion': typeof CompanionRoute
   '/healthcare': typeof HealthcareRoute
   '/insights': typeof InsightsRoute
   '/journal': typeof JournalRoute
@@ -114,6 +122,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/companion': typeof CompanionRoute
   '/healthcare': typeof HealthcareRoute
   '/insights': typeof InsightsRoute
   '/journal': typeof JournalRoute
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/companion'
     | '/healthcare'
     | '/insights'
     | '/journal'
@@ -144,6 +154,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/companion'
     | '/healthcare'
     | '/insights'
     | '/journal'
@@ -158,6 +169,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/companion'
     | '/healthcare'
     | '/insights'
     | '/journal'
@@ -173,6 +185,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CompanionRoute: typeof CompanionRoute
   HealthcareRoute: typeof HealthcareRoute
   InsightsRoute: typeof InsightsRoute
   JournalRoute: typeof JournalRoute
@@ -193,6 +206,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/companion': {
+      id: '/companion'
+      path: '/companion'
+      fullPath: '/companion'
+      preLoaderRoute: typeof CompanionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/healthcare': {
@@ -277,6 +297,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CompanionRoute: CompanionRoute,
   HealthcareRoute: HealthcareRoute,
   InsightsRoute: InsightsRoute,
   JournalRoute: JournalRoute,

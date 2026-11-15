@@ -1,5 +1,5 @@
-const CACHE = 'orbit-shell-v2';
-const PAGES = ['/', '/journal', '/journal/history', '/voice-notes', '/voice-notes/archive', '/insights', '/sensors', '/timeline', '/settings', '/healthcare'];
+const CACHE = 'orbit-shell-v3';
+const PAGES = ['/', '/journal', '/journal/history', '/voice-notes', '/voice-notes/archive', '/companion', '/insights', '/sensors', '/timeline', '/settings', '/healthcare'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(async cache => {
     for (const path of PAGES) { try { await cache.add(path); } catch {} }
