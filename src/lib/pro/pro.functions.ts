@@ -12,7 +12,7 @@ async function assertProfessional(supabase: any, ws: string, userId: string) {
 
 export const getWorkspaceOverview = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: { workspaceId: string }) => ({ workspaceId: uuid(i.workspaceId) }))
+  .validator((i: { workspaceId: string }) => ({ workspaceId: uuid(i.workspaceId) }))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertProfessional(supabase, data.workspaceId, userId);
@@ -39,7 +39,7 @@ export const getWorkspaceOverview = createServerFn({ method: 'POST' })
 
 export const getAstronautDetail = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: { workspaceId: string; userId: string }) => ({ workspaceId: uuid(i.workspaceId), userId: uuid(i.userId) }))
+  .validator((i: { workspaceId: string; userId: string }) => ({ workspaceId: uuid(i.workspaceId), userId: uuid(i.userId) }))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertProfessional(supabase, data.workspaceId, userId);
@@ -56,7 +56,7 @@ export const getAstronautDetail = createServerFn({ method: 'POST' })
 
 export const professionalAiReview = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: { workspaceId: string; userId: string; question?: string }) => ({ workspaceId: uuid(i.workspaceId), userId: uuid(i.userId), question: typeof i.question === 'string' ? i.question.slice(0, 1000) : '' }))
+  .validator((i: { workspaceId: string; userId: string; question?: string }) => ({ workspaceId: uuid(i.workspaceId), userId: uuid(i.userId), question: typeof i.question === 'string' ? i.question.slice(0, 1000) : '' }))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertProfessional(supabase, data.workspaceId, userId);
