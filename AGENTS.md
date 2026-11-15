@@ -32,7 +32,7 @@ use the editor.
 ## ORBIT architecture
 - Keep feature views in focused shared components and expose each workspace through a TanStack leaf route; this preserves typed navigation and distinct metadata.
 - For this offline prototype, store journals with immutable original timestamps and revisions in localStorage, and audio Blobs in IndexedDB; this avoids requiring connectivity for capture.
-- Keep healthcare content inaccessible until verified server-enforced authorization exists; a client-side role selector is not a security boundary.
+- Healthcare data is reachable only through workspace-scoped RLS and requireSupabaseAuth server functions (src/lib/pro); roles live in workspace_members per workspace, never in client storage or profiles, so one workspace's role grants nothing in another.
 - AI lives in src/lib/ai behind an AnalysisProvider interface (on-device LLM, rule-based, future remote); confidence, insufficient-data and risk always come from the deterministic layer so an LLM can't override safety or invent certainty.
 - Sensor data flows only through the SensorSource registry in src/lib/sensors; the prototype source must stay flagged simulated so generated readings are never shown as real measurements.
 - Escalation only reaches 'confirmed' with a real channel confirmation; simulated mode never claims a professional took over.
@@ -41,7 +41,9 @@ use the editor.
 - Mission day is derived from the profile's mission start date (negative before launch, launch = day 1); never hardcode mission days.
 - Only one voice reflection per local date; live topic coverage comes from src/lib/ai/coverage.ts.
 
-- Device accounts (src/lib/accounts.ts) hold salted PBKDF2 password hashes; each account's data is vaulted and swapped into live keys on sign-in so accounts stay isolated. This is identity confirmation, not a security boundary.
+- Sign-in is Cloud email/password; the device vault in src/lib/accounts.ts is keyed by the cloud user id so local offline data stays per-user. Capture stays offline-first; src/lib/sync.ts uploads journals/transcripts (never audio) to the user's astronaut workspaces.
+- Astronaut vs professional view comes from resolveView() in src/lib/cloud.ts; dual-role users switch views, and astronaut UI never shows clinical risk labels.
+- Workspace permission checks live in supabase/tests/permissions.sql (run via run_sql; it rolls itself back).
 - Testing mode (TESTING_FRESH_SESSIONS in src/lib/session.ts) keeps accounts and profiles but wipes check-ins, voice, AI memory and reminders on each new browser session.
 - Dates derive from the profile's time zone via todayDate()/useToday() (built-in Intl data, offline); never use the raw device date.
 - Consent (src/lib/consent.ts) is versioned per account; bumping TERMS_VERSION re-prompts everyone. Escalation transmits only when escalationReadiness() is fully met, while the AI safety lock is independent of notification outcome.

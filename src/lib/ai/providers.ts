@@ -10,7 +10,7 @@ export interface AnalysisProvider {
   analyze(input: AnalysisInput): Promise<Analysis>;
   chat?(question: string, context: string): Promise<string>;
 }
-const SYSTEM = `You are ORBIT, a supportive wellbeing companion for an astronaut. Never diagnose, never name mental health conditions, never use alarming labels. Offer gentle, optional suggestions that respect the astronaut's autonomy. Say clearly when information is limited. Keep replies short and warm.`;
+const SYSTEM = `You are AstraCare, a supportive wellbeing companion for an astronaut. Never diagnose, never name mental health conditions, never use alarming labels. Offer gentle, optional suggestions that respect the astronaut's autonomy. Say clearly when information is limited. Keep replies short and warm.`;
 
 export const rulesProvider: AnalysisProvider = { id: 'rules', label: 'On-device pattern analysis', kind: 'rules', available: async () => true, analyze: async i => ruleBasedAnalysis(i) };
 

@@ -7,23 +7,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { CONSENT_EVENT, TERMS_VERSION, acceptConsent, canAccept, escalationReadiness, loadConsent, withdrawSharing, type Consent } from '@/lib/consent';
 
 const sections: [string, string[]][] = [
-  ['1. Purpose of ORBIT', ['ORBIT supports astronaut wellbeing through daily check-ins, voice reflections and physiological readings.', 'ORBIT uses AI to compare mental-health indicators against your own personalized baseline, built from your earlier check-ins, rather than against a population average.']],
+  ['1. Purpose of AstraCare', ['AstraCare supports astronaut wellbeing through daily check-ins, voice reflections and physiological readings.', 'AstraCare uses AI to compare mental-health indicators against your own personalized baseline, built from your earlier check-ins, rather than against a population average.']],
   ['2. Information collected', ['Journal check-ins, voice reflections and their transcripts, self-reported ratings, profile details (name, birth date, gender, mission dates, time zone) and available sensor readings.']],
   ['3. Where your information is stored', ['In this prototype everything, including these consent records, stays on this device inside your account. It is not encrypted mission-grade storage. Secure synchronization is planned for production.']],
-  ['4. Limits of AI', ['AI-generated classifications and suggestions are not medical diagnoses and do not replace a qualified professional.', 'ORBIT cannot guarantee immediate professional intervention. If you need help now, contact your crew or flight surgeon through your mission channel.']],
+  ['4. Limits of AI', ['AI-generated classifications and suggestions are not medical diagnoses and do not replace a qualified professional.', 'AstraCare cannot guarantee immediate professional intervention. If you need help now, contact your crew or flight surgeon through your mission channel.']],
   ['5. Your rights', ['You can review these terms at any time, export your journals, withdraw healthcare data-sharing consent in Settings, and delete your account and its data.']],
   ['6. Changes to these terms', [`This is version ${TERMS_VERSION}. If the terms change materially, you will be asked to review and accept the new version before continuing.`]],
 ];
 
 export function TermsDocument() {
   return <div className="terms-doc">
-    <Accordion type="multiple" defaultValue={['1. Purpose of ORBIT']}>{sections.map(([t, ps]) => <AccordionItem key={t} value={t}><AccordionTrigger>{t}</AccordionTrigger><AccordionContent>{ps.map(p => <p key={p}>{p}</p>)}</AccordionContent></AccordionItem>)}</Accordion>
+    <Accordion type="multiple" defaultValue={['1. Purpose of AstraCare']}>{sections.map(([t, ps]) => <AccordionItem key={t} value={t}><AccordionTrigger>{t}</AccordionTrigger><AccordionContent>{ps.map(p => <p key={p}>{p}</p>)}</AccordionContent></AccordionItem>)}</Accordion>
     <section className="terms-risk" aria-labelledby="risk-h"><div className="terms-risk-head"><AlertTriangle size={20} /><h3 id="risk-h">Mandatory risk escalation agreement</h3></div>
-      <p>ORBIT's AI uses three classifications against your personal baseline:</p>
+      <p>AstraCare's AI uses three classifications against your personal baseline:</p>
       <ul className="terms-tiers"><li><strong>Low risk</strong> Indicators are relatively consistent with your baseline.</li><li><strong>Moderate risk</strong> Meaningful deviations were detected and need more monitoring.</li><li><strong>High risk</strong> Significant deviations were detected, which starts the professional escalation protocol.</li></ul>
       <p>When a high-risk classification is detected:</p>
       <ol><li>The AI immediately suspends personalized mental-health advice and recommendations.</li><li>The system sends a notification to your designated healthcare professional, only if the required consent and connection are in place.</li><li>Relevant information (risk classification, baseline deviation, historical trends and relevant check-in information) is transmitted securely.</li><li>The healthcare professional reviews the information and decides the next steps.</li><li>AI-generated personalized feedback stays suspended until the approved safety conditions for reactivation are met. A failed notification never reactivates it.</li></ol>
-      <p className="terms-note">AI classifications are not medical diagnoses. ORBIT cannot guarantee immediate professional intervention.</p>
+      <p className="terms-note">AI classifications are not medical diagnoses. AstraCare cannot guarantee immediate professional intervention.</p>
     </section>
   </div>;
 }
@@ -41,8 +41,8 @@ function SharingConsentBox() {
 export function TermsScreen() {
   const [terms, setTerms] = useState(false); const [share, setShare] = useState(false); const [review, setReview] = useState(false);
   return <div className="onboard-screen"><section className="onboard-card terms-card">
-    <div className="onboard-brand"><Orbit size={40} strokeWidth={1.4} /><div><strong>ORBIT</strong><span>Terms & Conditions · Version {TERMS_VERSION}</span></div></div>
-    <h1>Before you begin</h1><p>Please read how ORBIT monitors your wellbeing and what happens if your baseline indicates high risk.</p>
+    <div className="onboard-brand"><Orbit size={40} strokeWidth={1.4} /><div><strong>AstraCare</strong><span>Terms & Conditions · Version {TERMS_VERSION}</span></div></div>
+    <h1>Before you begin</h1><p>Please read how AstraCare monitors your wellbeing and what happens if your baseline indicates high risk.</p>
     <div className="terms-scroll" tabIndex={0}><TermsDocument /></div>
     <SharingConsentBox />
     <div className="terms-accept">
@@ -56,7 +56,7 @@ export function TermsScreen() {
 }
 
 export function TermsDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
-  return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl"><DialogHeader><DialogTitle>ORBIT Terms & Conditions · v{TERMS_VERSION}</DialogTitle></DialogHeader><TermsDocument /></DialogContent></Dialog>;
+  return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl"><DialogHeader><DialogTitle>AstraCare Terms & Conditions · v{TERMS_VERSION}</DialogTitle></DialogHeader><TermsDocument /></DialogContent></Dialog>;
 }
 
 export function useConsent() {

@@ -4,6 +4,7 @@ export const ACCOUNTS_KEY = 'orbit-accounts-v1';
 const ACTIVE = 'orbit-active-account';
 const VAULT = 'orbit-vault-';
 const SHARED = new Set([ACCOUNTS_KEY, 'orbit-ai-provider', 'orbit-session-started']);
+const isShared = (k: string) => SHARED.has(k) || k.startsWith('orbit-voice-alias-') || k.startsWith('orbit-imported-');
 export const ACCOUNT_EVENT = 'orbit-account-change';
 export const MIN_PASSWORD = 8;
 
@@ -38,8 +39,8 @@ export async function changePassword(id: string, current: string, next: string) 
   writeAccounts(listAccounts().map(a => a.id === id ? { ...a, salt, hash } : a)); return true;
 }
 export function activeAccountId() { try { return sessionStorage.getItem(ACTIVE); } catch { return null; } }
-export function voiceDbName() { const id = activeAccountId(); return id ? `orbit-voice-${id}` : 'orbit-voice-v1'; }
-const liveKeys = () => Object.keys(localStorage).filter(k => k.startsWith('orbit-') && !SHARED.has(k) && !k.startsWith(VAULT));
+export function voiceDbName() { const id = activeAccountId(); if (!id) return 'orbit-voice-v1'; let alias: string | null = null; try { alias = localStorage.getItem(`orbit-voice-alias-${id}`); } catch {} return `orbit-voice-${alias ?? id}`; }
+const liveKeys = () => Object.keys(localStorage).filter(k => k.startsWith('orbit-') && !isShared(k) && !k.startsWith(VAULT));
 function readVault(id: string): Record<string, string> { try { return JSON.parse(localStorage.getItem(VAULT + id) || '{}'); } catch { return {}; } }
 export function stashActive() {
   const id = activeAccountId(); if (!id) return;
@@ -70,4 +71,21 @@ export function resetAccountData(keep = ['orbit-profile-v1', 'orbit-consent-v1']
     localStorage.setItem(k, JSON.stringify(Object.fromEntries(Object.entries(v).filter(([key]) => keep.includes(key)))));
   });
   try { localStorage.removeItem(ACTIVE); } catch {}
+}
+/** One-time move of an old device-only account's data into the signed-in cloud account's vault. */
+export async function importLegacyAccount(oldId: string, password: string, cloudUserId: string) {
+  const acc = listAccounts().find(a => a.id === oldId);
+  if (!acc || !(await verifyPassword(acc, password))) return false;
+  const merged = { ...readVault(oldId), ...(activeAccountId() === cloudUserId ? {} : readVault(cloudUserId)) };
+  if (activeAccountId() === cloudUserId) { liveKeys().forEach(k => { merged[k] = merged[k] ?? localStorage.getItem(k) ?? ''; }); }
+  localStorage.setItem(VAULT + cloudUserId, JSON.stringify(merged));
+  sessionStorage.removeItem(ACTIVE); liveKeys().forEach(k => localStorage.removeItem(k));
+  try {
+    const src = indexedDB.open(`orbit-voice-${oldId}`);
+    src.onsuccess = () => { /* audio stays readable under the old store name; copy lazily */ src.result.close(); localStorage.setItem(`orbit-voice-alias-${cloudUserId}`, oldId); };
+  } catch {}
+  writeAccounts(listAccounts().filter(a => a.id !== oldId));
+  localStorage.setItem(`orbit-imported-${oldId}`, cloudUserId);
+  signIn(cloudUserId);
+  return true;
 }

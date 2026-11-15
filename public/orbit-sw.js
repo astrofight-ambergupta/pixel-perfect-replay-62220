@@ -1,5 +1,5 @@
-const CACHE = 'orbit-shell-v3';
-const PAGES = ['/', '/journal', '/journal/history', '/voice-notes', '/voice-notes/archive', '/companion', '/insights', '/sensors', '/timeline', '/settings', '/healthcare'];
+const CACHE = 'astracare-shell-v4';
+const PAGES = ['/pro', '/', '/journal', '/journal/history', '/voice-notes', '/voice-notes/archive', '/companion', '/insights', '/sensors', '/timeline', '/settings', '/healthcare'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(async cache => {
     for (const path of PAGES) { try { await cache.add(path); } catch {} }
@@ -18,7 +18,7 @@ self.addEventListener('message', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) return;
   const url = new URL(event.request.url);
-  if (url.pathname.startsWith('/api/')) return;
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/_serverFn') || url.pathname.startsWith('/~oauth')) return;
   event.respondWith(fetch(event.request).then(response => {
     if (response.ok) { const copy = response.clone(); event.waitUntil(caches.open(CACHE).then(cache => cache.put(event.request, copy))); }
     return response;

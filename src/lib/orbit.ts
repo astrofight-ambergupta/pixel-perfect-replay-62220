@@ -89,4 +89,4 @@ export function useToday() {
     return () => { clearInterval(id); document.removeEventListener('visibilitychange', vis); window.removeEventListener('focus', u); window.removeEventListener('orbit-profile-change', u); }; }, []);
   return today;
 }
-export function pageHead(title: string, description: string) { return { meta: [{ title: `${title} · ORBIT` }, { name: 'description', content: description }, { property: 'og:title', content: `${title} · ORBIT` }, { property: 'og:description', content: description }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary_large_image' }] }; }
+export function pageHead(title: string, description: string) { return { meta: [{ title: `${title} · AstraCare` }, { name: 'description', content: description }, { property: 'og:title', content: `${title} · AstraCare` }, { property: 'og:description', content: description }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary_large_image' }] }; }

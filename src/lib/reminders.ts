@@ -15,8 +15,8 @@ function remindersEnabled() { try { return localStorage.getItem('orbit-reminders
 async function notify(body: string) {
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
   const reg = await navigator.serviceWorker?.getRegistration?.().catch(() => undefined);
-  if (reg) await reg.showNotification('ORBIT', { body, tag: 'orbit-checkin', icon: '/favicon.ico' });
-  else new Notification('ORBIT', { body, tag: 'orbit-checkin' });
+  if (reg) await reg.showNotification('AstraCare', { body, tag: 'orbit-checkin', icon: '/favicon.ico' });
+  else new Notification('AstraCare', { body, tag: 'orbit-checkin' });
 }
 /** Schedules the daily reminder while the app is open; returns a cleanup. Skips if today's check-in is done. */
 export function scheduleDailyReminder(profile: Profile, hasCheckedInToday: () => boolean) {

@@ -16,4 +16,6 @@
 - AI interpretations need clinical validation; a real escalation channel to Earth is required before any takeover can be confirmed.
 - Healthcare assessments, alerts, assignments, and access logs require verified medical authorization and secure storage.
 - Encrypted mission storage and secure synchronization require a mission-side service.
-- Real sensor readings require compatible sensor integration.
+- Real sensor readings require compatible sensor integration.- [x] AstraCare rebrand, cloud accounts, workspaces, professional dashboard, sync, professional AI review
+- [ ] Confirm with user: professionals see full check-in text + transcripts (current), old device data imported (current)
+- [ ] Real healthcare notification channel for escalation (needs provider choice)

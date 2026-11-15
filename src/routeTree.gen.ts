@@ -14,14 +14,19 @@ import { Route as CompanionRouteImport } from './routes/companion'
 import { Route as HealthcareRouteImport } from './routes/healthcare'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as JournalRouteImport } from './routes/journal'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SensorsRouteImport } from './routes/sensors'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TimelineRouteImport } from './routes/timeline'
 import { Route as VoiceNotesRouteImport } from './routes/voice-notes'
+import { Route as JoinCodeRouteImport } from './routes/join.$code'
 import { Route as JournalIdRouteImport } from './routes/journal_.$id'
 import { Route as JournalHistoryRouteImport } from './routes/journal_.history'
+import { Route as ProIndexRouteImport } from './routes/pro.index'
 import { Route as VoiceNotesIdRouteImport } from './routes/voice-notes_.$id'
 import { Route as VoiceNotesArchiveRouteImport } from './routes/voice-notes_.archive'
+import { Route as ProWorkspaceIdIndexRouteImport } from './routes/pro.$workspaceId.index'
+import { Route as ProWorkspaceIdUserIdRouteImport } from './routes/pro.$workspaceId.$userId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -48,6 +53,11 @@ const JournalRoute = JournalRouteImport.update({
   path: '/journal',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SensorsRoute = SensorsRouteImport.update({
   id: '/sensors',
   path: '/sensors',
@@ -68,6 +78,11 @@ const VoiceNotesRoute = VoiceNotesRouteImport.update({
   path: '/voice-notes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JoinCodeRoute = JoinCodeRouteImport.update({
+  id: '/join/$code',
+  path: '/join/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JournalIdRoute = JournalIdRouteImport.update({
   id: '/journal_/$id',
   path: '/journal/$id',
@@ -76,6 +91,11 @@ const JournalIdRoute = JournalIdRouteImport.update({
 const JournalHistoryRoute = JournalHistoryRouteImport.update({
   id: '/journal_/history',
   path: '/journal/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProIndexRoute = ProIndexRouteImport.update({
+  id: '/pro/',
+  path: '/pro/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VoiceNotesIdRoute = VoiceNotesIdRouteImport.update({
@@ -88,6 +108,16 @@ const VoiceNotesArchiveRoute = VoiceNotesArchiveRouteImport.update({
   path: '/voice-notes/archive',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProWorkspaceIdIndexRoute = ProWorkspaceIdIndexRouteImport.update({
+  id: '/pro/$workspaceId/',
+  path: '/pro/$workspaceId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProWorkspaceIdUserIdRoute = ProWorkspaceIdUserIdRouteImport.update({
+  id: '/pro/$workspaceId/$userId',
+  path: '/pro/$workspaceId/$userId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -95,14 +125,19 @@ export interface FileRoutesByFullPath {
   '/healthcare': typeof HealthcareRoute
   '/insights': typeof InsightsRoute
   '/journal': typeof JournalRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sensors': typeof SensorsRoute
   '/settings': typeof SettingsRoute
   '/timeline': typeof TimelineRoute
   '/voice-notes': typeof VoiceNotesRoute
+  '/join/$code': typeof JoinCodeRoute
   '/journal/$id': typeof JournalIdRoute
   '/journal/history': typeof JournalHistoryRoute
   '/voice-notes/$id': typeof VoiceNotesIdRoute
   '/voice-notes/archive': typeof VoiceNotesArchiveRoute
+  '/pro/': typeof ProIndexRoute
+  '/pro/$workspaceId/$userId': typeof ProWorkspaceIdUserIdRoute
+  '/pro/$workspaceId/': typeof ProWorkspaceIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -110,14 +145,19 @@ export interface FileRoutesByTo {
   '/healthcare': typeof HealthcareRoute
   '/insights': typeof InsightsRoute
   '/journal': typeof JournalRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sensors': typeof SensorsRoute
   '/settings': typeof SettingsRoute
   '/timeline': typeof TimelineRoute
   '/voice-notes': typeof VoiceNotesRoute
+  '/join/$code': typeof JoinCodeRoute
   '/journal/$id': typeof JournalIdRoute
   '/journal/history': typeof JournalHistoryRoute
   '/voice-notes/$id': typeof VoiceNotesIdRoute
   '/voice-notes/archive': typeof VoiceNotesArchiveRoute
+  '/pro': typeof ProIndexRoute
+  '/pro/$workspaceId/$userId': typeof ProWorkspaceIdUserIdRoute
+  '/pro/$workspaceId': typeof ProWorkspaceIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -126,14 +166,19 @@ export interface FileRoutesById {
   '/healthcare': typeof HealthcareRoute
   '/insights': typeof InsightsRoute
   '/journal': typeof JournalRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sensors': typeof SensorsRoute
   '/settings': typeof SettingsRoute
   '/timeline': typeof TimelineRoute
   '/voice-notes': typeof VoiceNotesRoute
+  '/join/$code': typeof JoinCodeRoute
   '/journal_/$id': typeof JournalIdRoute
   '/journal_/history': typeof JournalHistoryRoute
   '/voice-notes_/$id': typeof VoiceNotesIdRoute
   '/voice-notes_/archive': typeof VoiceNotesArchiveRoute
+  '/pro/': typeof ProIndexRoute
+  '/pro/$workspaceId/$userId': typeof ProWorkspaceIdUserIdRoute
+  '/pro/$workspaceId/': typeof ProWorkspaceIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -143,14 +188,19 @@ export interface FileRouteTypes {
     | '/healthcare'
     | '/insights'
     | '/journal'
+    | '/reset-password'
     | '/sensors'
     | '/settings'
     | '/timeline'
     | '/voice-notes'
+    | '/join/$code'
     | '/journal/$id'
     | '/journal/history'
     | '/voice-notes/$id'
     | '/voice-notes/archive'
+    | '/pro/'
+    | '/pro/$workspaceId/$userId'
+    | '/pro/$workspaceId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -158,14 +208,19 @@ export interface FileRouteTypes {
     | '/healthcare'
     | '/insights'
     | '/journal'
+    | '/reset-password'
     | '/sensors'
     | '/settings'
     | '/timeline'
     | '/voice-notes'
+    | '/join/$code'
     | '/journal/$id'
     | '/journal/history'
     | '/voice-notes/$id'
     | '/voice-notes/archive'
+    | '/pro'
+    | '/pro/$workspaceId/$userId'
+    | '/pro/$workspaceId'
   id:
     | '__root__'
     | '/'
@@ -173,14 +228,19 @@ export interface FileRouteTypes {
     | '/healthcare'
     | '/insights'
     | '/journal'
+    | '/reset-password'
     | '/sensors'
     | '/settings'
     | '/timeline'
     | '/voice-notes'
+    | '/join/$code'
     | '/journal_/$id'
     | '/journal_/history'
     | '/voice-notes_/$id'
     | '/voice-notes_/archive'
+    | '/pro/'
+    | '/pro/$workspaceId/$userId'
+    | '/pro/$workspaceId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -189,14 +249,19 @@ export interface RootRouteChildren {
   HealthcareRoute: typeof HealthcareRoute
   InsightsRoute: typeof InsightsRoute
   JournalRoute: typeof JournalRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SensorsRoute: typeof SensorsRoute
   SettingsRoute: typeof SettingsRoute
   TimelineRoute: typeof TimelineRoute
   VoiceNotesRoute: typeof VoiceNotesRoute
+  JoinCodeRoute: typeof JoinCodeRoute
   JournalIdRoute: typeof JournalIdRoute
   JournalHistoryRoute: typeof JournalHistoryRoute
   VoiceNotesIdRoute: typeof VoiceNotesIdRoute
   VoiceNotesArchiveRoute: typeof VoiceNotesArchiveRoute
+  ProIndexRoute: typeof ProIndexRoute
+  ProWorkspaceIdUserIdRoute: typeof ProWorkspaceIdUserIdRoute
+  ProWorkspaceIdIndexRoute: typeof ProWorkspaceIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -236,6 +301,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JournalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sensors': {
       id: '/sensors'
       path: '/sensors'
@@ -264,6 +336,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VoiceNotesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/join/$code': {
+      id: '/join/$code'
+      path: '/join/$code'
+      fullPath: '/join/$code'
+      preLoaderRoute: typeof JoinCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/journal_/$id': {
       id: '/journal_/$id'
       path: '/journal/$id'
@@ -276,6 +355,13 @@ declare module '@tanstack/react-router' {
       path: '/journal/history'
       fullPath: '/journal/history'
       preLoaderRoute: typeof JournalHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pro/': {
+      id: '/pro/'
+      path: '/pro'
+      fullPath: '/pro/'
+      preLoaderRoute: typeof ProIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/voice-notes_/$id': {
@@ -292,6 +378,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VoiceNotesArchiveRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pro/$workspaceId/': {
+      id: '/pro/$workspaceId/'
+      path: '/pro/$workspaceId'
+      fullPath: '/pro/$workspaceId/'
+      preLoaderRoute: typeof ProWorkspaceIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pro/$workspaceId/$userId': {
+      id: '/pro/$workspaceId/$userId'
+      path: '/pro/$workspaceId/$userId'
+      fullPath: '/pro/$workspaceId/$userId'
+      preLoaderRoute: typeof ProWorkspaceIdUserIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -301,14 +401,19 @@ const rootRouteChildren: RootRouteChildren = {
   HealthcareRoute: HealthcareRoute,
   InsightsRoute: InsightsRoute,
   JournalRoute: JournalRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SensorsRoute: SensorsRoute,
   SettingsRoute: SettingsRoute,
   TimelineRoute: TimelineRoute,
   VoiceNotesRoute: VoiceNotesRoute,
+  JoinCodeRoute: JoinCodeRoute,
   JournalIdRoute: JournalIdRoute,
   JournalHistoryRoute: JournalHistoryRoute,
   VoiceNotesIdRoute: VoiceNotesIdRoute,
   VoiceNotesArchiveRoute: VoiceNotesArchiveRoute,
+  ProIndexRoute: ProIndexRoute,
+  ProWorkspaceIdUserIdRoute: ProWorkspaceIdUserIdRoute,
+  ProWorkspaceIdIndexRoute: ProWorkspaceIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

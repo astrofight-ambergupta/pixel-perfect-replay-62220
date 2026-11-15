@@ -82,10 +82,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "ORBIT — Mission wellbeing" },
+      { title: "AstraCare — Mission wellbeing" },
       { name: "description", content: "Understanding the human behind every mission." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "ORBIT — Mission wellbeing" },
+      { property: "og:title", content: "AstraCare — Mission wellbeing" },
       { property: "og:description", content: "Understanding the human behind every mission." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
