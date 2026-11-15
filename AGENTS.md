@@ -28,3 +28,10 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## ORBIT architecture
+- Keep feature views in focused shared components and expose each workspace through a TanStack leaf route; this preserves typed navigation and distinct metadata.
+- For this offline prototype, store journals with immutable original timestamps and revisions in localStorage, and audio Blobs in IndexedDB; this avoids requiring connectivity for capture.
+- Keep healthcare content inaccessible until verified server-enforced authorization exists; a client-side role selector is not a security boundary.
+- Mark insights and sensors as demonstrations until validated longitudinal analysis and real sensor integrations are connected; no diagnosis or clinical inference is performed locally.
+- Cache the application shell using a same-origin service worker; secure synchronization and encrypted mission storage remain future production work.

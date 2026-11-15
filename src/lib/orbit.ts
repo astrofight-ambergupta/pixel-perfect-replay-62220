@@ -12,13 +12,13 @@ export const ratingQuestions = [
   ['Isolation', 'Have you experienced feelings of isolation or disconnection?'],
   ['Motivation', 'How would you describe your motivation today?'],
 ] as const;
-export const reflectionQuestions = ['What was the most challenging part of today?', 'What was something positive that happened today?', 'Is there anything else you would like to reflect on?'];
+export const reflectionQuestions = ['What was the most challenging part of today?', 'What was something positive that happened today?', 'Is there anything else you would like to reflect on?'] as const;
 export const prompts = {
   'Personal reflection': ['Describe what a normal day looks like for you.', 'What activities make you feel most fulfilled?', 'What do you typically do after a challenging day?', 'What motivates you when you are under pressure?'],
   'Stress & adaptation': ['Describe a recent situation where you experienced significant pressure.', 'How do you respond to unexpected changes?', 'What helps you regain focus after a difficult experience?', 'How do you communicate when you feel overwhelmed?'],
   'Social wellbeing': ['How do you maintain relationships when you are away from people?', 'What makes you feel connected to others?', 'How do you express frustration or disagreement?', 'What helps you feel supported?'],
   'Cognitive functioning': ['How would you describe your normal concentration?', 'When do you feel most mentally alert?', 'How do you respond to mentally demanding tasks?', 'What does mental fatigue feel like for you?'],
-};
+} as const;
 export const demoJournals: Journal[] = [13, 12, 11, 10, 9, 8, 7].map((day, i) => ({
   id: `demo-${day}`, date: `2026-11-${String(day).padStart(2, '0')}`, day: 142 - i,
   createdAt: `2026-11-${String(day).padStart(2, '0')}T18:30:00Z`, updatedAt: `2026-11-${String(day).padStart(2, '0')}T18:30:00Z`,

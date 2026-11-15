@@ -10,33 +10,180 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HealthcareRouteImport } from './routes/healthcare'
+import { Route as InsightsRouteImport } from './routes/insights'
+import { Route as JournalRouteImport } from './routes/journal'
+import { Route as SensorsRouteImport } from './routes/sensors'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as TimelineRouteImport } from './routes/timeline'
+import { Route as VoiceNotesRouteImport } from './routes/voice-notes'
+import { Route as JournalIdRouteImport } from './routes/journal_.$id'
+import { Route as JournalHistoryRouteImport } from './routes/journal_.history'
+import { Route as VoiceNotesIdRouteImport } from './routes/voice-notes_.$id'
+import { Route as VoiceNotesArchiveRouteImport } from './routes/voice-notes_.archive'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HealthcareRoute = HealthcareRouteImport.update({
+  id: '/healthcare',
+  path: '/healthcare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InsightsRoute = InsightsRouteImport.update({
+  id: '/insights',
+  path: '/insights',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JournalRoute = JournalRouteImport.update({
+  id: '/journal',
+  path: '/journal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SensorsRoute = SensorsRouteImport.update({
+  id: '/sensors',
+  path: '/sensors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TimelineRoute = TimelineRouteImport.update({
+  id: '/timeline',
+  path: '/timeline',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VoiceNotesRoute = VoiceNotesRouteImport.update({
+  id: '/voice-notes',
+  path: '/voice-notes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JournalIdRoute = JournalIdRouteImport.update({
+  id: '/journal_/$id',
+  path: '/journal/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JournalHistoryRoute = JournalHistoryRouteImport.update({
+  id: '/journal_/history',
+  path: '/journal/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VoiceNotesIdRoute = VoiceNotesIdRouteImport.update({
+  id: '/voice-notes_/$id',
+  path: '/voice-notes/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VoiceNotesArchiveRoute = VoiceNotesArchiveRouteImport.update({
+  id: '/voice-notes_/archive',
+  path: '/voice-notes/archive',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/healthcare': typeof HealthcareRoute
+  '/insights': typeof InsightsRoute
+  '/journal': typeof JournalRoute
+  '/sensors': typeof SensorsRoute
+  '/settings': typeof SettingsRoute
+  '/timeline': typeof TimelineRoute
+  '/voice-notes': typeof VoiceNotesRoute
+  '/journal/$id': typeof JournalIdRoute
+  '/journal/history': typeof JournalHistoryRoute
+  '/voice-notes/$id': typeof VoiceNotesIdRoute
+  '/voice-notes/archive': typeof VoiceNotesArchiveRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/healthcare': typeof HealthcareRoute
+  '/insights': typeof InsightsRoute
+  '/journal': typeof JournalRoute
+  '/sensors': typeof SensorsRoute
+  '/settings': typeof SettingsRoute
+  '/timeline': typeof TimelineRoute
+  '/voice-notes': typeof VoiceNotesRoute
+  '/journal/$id': typeof JournalIdRoute
+  '/journal/history': typeof JournalHistoryRoute
+  '/voice-notes/$id': typeof VoiceNotesIdRoute
+  '/voice-notes/archive': typeof VoiceNotesArchiveRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/healthcare': typeof HealthcareRoute
+  '/insights': typeof InsightsRoute
+  '/journal': typeof JournalRoute
+  '/sensors': typeof SensorsRoute
+  '/settings': typeof SettingsRoute
+  '/timeline': typeof TimelineRoute
+  '/voice-notes': typeof VoiceNotesRoute
+  '/journal_/$id': typeof JournalIdRoute
+  '/journal_/history': typeof JournalHistoryRoute
+  '/voice-notes_/$id': typeof VoiceNotesIdRoute
+  '/voice-notes_/archive': typeof VoiceNotesArchiveRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/healthcare'
+    | '/insights'
+    | '/journal'
+    | '/sensors'
+    | '/settings'
+    | '/timeline'
+    | '/voice-notes'
+    | '/journal/$id'
+    | '/journal/history'
+    | '/voice-notes/$id'
+    | '/voice-notes/archive'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/healthcare'
+    | '/insights'
+    | '/journal'
+    | '/sensors'
+    | '/settings'
+    | '/timeline'
+    | '/voice-notes'
+    | '/journal/$id'
+    | '/journal/history'
+    | '/voice-notes/$id'
+    | '/voice-notes/archive'
+  id:
+    | '__root__'
+    | '/'
+    | '/healthcare'
+    | '/insights'
+    | '/journal'
+    | '/sensors'
+    | '/settings'
+    | '/timeline'
+    | '/voice-notes'
+    | '/journal_/$id'
+    | '/journal_/history'
+    | '/voice-notes_/$id'
+    | '/voice-notes_/archive'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HealthcareRoute: typeof HealthcareRoute
+  InsightsRoute: typeof InsightsRoute
+  JournalRoute: typeof JournalRoute
+  SensorsRoute: typeof SensorsRoute
+  SettingsRoute: typeof SettingsRoute
+  TimelineRoute: typeof TimelineRoute
+  VoiceNotesRoute: typeof VoiceNotesRoute
+  JournalIdRoute: typeof JournalIdRoute
+  JournalHistoryRoute: typeof JournalHistoryRoute
+  VoiceNotesIdRoute: typeof VoiceNotesIdRoute
+  VoiceNotesArchiveRoute: typeof VoiceNotesArchiveRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +195,99 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/healthcare': {
+      id: '/healthcare'
+      path: '/healthcare'
+      fullPath: '/healthcare'
+      preLoaderRoute: typeof HealthcareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/insights': {
+      id: '/insights'
+      path: '/insights'
+      fullPath: '/insights'
+      preLoaderRoute: typeof InsightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/journal': {
+      id: '/journal'
+      path: '/journal'
+      fullPath: '/journal'
+      preLoaderRoute: typeof JournalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sensors': {
+      id: '/sensors'
+      path: '/sensors'
+      fullPath: '/sensors'
+      preLoaderRoute: typeof SensorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/timeline': {
+      id: '/timeline'
+      path: '/timeline'
+      fullPath: '/timeline'
+      preLoaderRoute: typeof TimelineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/voice-notes': {
+      id: '/voice-notes'
+      path: '/voice-notes'
+      fullPath: '/voice-notes'
+      preLoaderRoute: typeof VoiceNotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/journal_/$id': {
+      id: '/journal_/$id'
+      path: '/journal/$id'
+      fullPath: '/journal/$id'
+      preLoaderRoute: typeof JournalIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/journal_/history': {
+      id: '/journal_/history'
+      path: '/journal/history'
+      fullPath: '/journal/history'
+      preLoaderRoute: typeof JournalHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/voice-notes_/$id': {
+      id: '/voice-notes_/$id'
+      path: '/voice-notes/$id'
+      fullPath: '/voice-notes/$id'
+      preLoaderRoute: typeof VoiceNotesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/voice-notes_/archive': {
+      id: '/voice-notes_/archive'
+      path: '/voice-notes/archive'
+      fullPath: '/voice-notes/archive'
+      preLoaderRoute: typeof VoiceNotesArchiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HealthcareRoute: HealthcareRoute,
+  InsightsRoute: InsightsRoute,
+  JournalRoute: JournalRoute,
+  SensorsRoute: SensorsRoute,
+  SettingsRoute: SettingsRoute,
+  TimelineRoute: TimelineRoute,
+  VoiceNotesRoute: VoiceNotesRoute,
+  JournalIdRoute: JournalIdRoute,
+  JournalHistoryRoute: JournalHistoryRoute,
+  VoiceNotesIdRoute: VoiceNotesIdRoute,
+  VoiceNotesArchiveRoute: VoiceNotesArchiveRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
