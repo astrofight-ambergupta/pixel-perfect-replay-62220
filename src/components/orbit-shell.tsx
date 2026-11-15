@@ -2,6 +2,8 @@ import { Link, useRouterState } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { Activity, ArrowUpRight, Bell, BookOpen, ChevronDown, CircleHelp, LayoutDashboard, Menu, Mic, Orbit, Radio, Settings2, ShieldCheck, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { OrbitOnboarding } from './orbit-onboarding';
+import { initials, useProfile } from '@/lib/profile';
 
 const nav = [
   { to: '/', label: 'Overview', icon: LayoutDashboard },
@@ -19,16 +21,20 @@ export function OrbitShell({ children }: { children: React.ReactNode }) {
   const [help, setHelp] = useState(false);
   useEffect(() => { const update = () => setOnline(navigator.onLine); update(); window.addEventListener('online', update); window.addEventListener('offline', update); return () => { window.removeEventListener('online', update); window.removeEventListener('offline', update); }; }, []);
   useEffect(() => setOpen(false), [path]);
+  const { ready, profile } = useProfile();
+  if (!ready) return <div className="onboard-screen" />;
+  if (!profile) return <OrbitOnboarding />;
+  const ini = initials(profile.name);
   return <div className="app-layout">
     <aside className={`sidebar ${open ? 'sidebar-open' : ''}`}>
       <Link to="/" className="brand"><Orbit size={34} strokeWidth={1.5} /><span>ORBIT<span className="brand-caption">HUMAN SPACEFLIGHT</span></span></Link>
       <div className="workspace"><div className="mission-symbol"><Orbit size={20}/></div><div><strong>Ares Expedition</strong><span>CREW WELLBEING PROGRAM</span></div><ChevronDown size={14}/></div>
       <p className="nav-label">YOUR SPACE</p>
       <nav>{nav.map(item => <Link key={item.to} to={item.to} className={`nav-item ${item.to === '/' ? path === '/' ? 'active' : '' : path.startsWith(item.to) ? 'active' : ''}`}><item.icon size={19}/>{item.label}{item.to === '/insights' && <span className="nav-count">3</span>}</Link>)}</nav>
-      <div className="sidebar-bottom"><div className="baseline-panel"><span className="baseline-icon"><ShieldCheck size={20}/></span><strong>Built around you.</strong><p>Your individual baseline.<br/>Your journey. Your wellbeing.</p><Link to="/insights">Explore your baseline <ArrowUpRight size={14}/></Link></div><Link to="/settings" className={`nav-item ${path === '/settings' ? 'active' : ''}`}><Settings2 size={19}/>Settings & privacy</Link><Button variant="ghost" className="help-button" onClick={() => setHelp(true)}><CircleHelp size={19}/>Support & resources <ArrowUpRight size={14}/></Button><div className="profile"><span className="avatar">EC</span><div><strong>Elena Carter</strong><span>Flight engineer</span></div><Link to="/settings" aria-label="Profile settings"><ChevronDown size={15}/></Link></div></div>
+      <div className="sidebar-bottom"><div className="baseline-panel"><span className="baseline-icon"><ShieldCheck size={20}/></span><strong>Built around you.</strong><p>Your individual baseline.<br/>Your journey. Your wellbeing.</p><Link to="/insights">Explore your baseline <ArrowUpRight size={14}/></Link></div><Link to="/settings" className={`nav-item ${path === '/settings' ? 'active' : ''}`}><Settings2 size={19}/>Settings & privacy</Link><Button variant="ghost" className="help-button" onClick={() => setHelp(true)}><CircleHelp size={19}/>Support & resources <ArrowUpRight size={14}/></Button><div className="profile"><span className="avatar">{ini}</span><div><strong>{profile.name}</strong><span>Crew member</span></div><Link to="/settings" aria-label="Profile settings"><ChevronDown size={15}/></Link></div></div>
     </aside>
     {open && <div className="sidebar-backdrop" onClick={() => setOpen(false)}/>}
-    <div className="main-shell"><header className="topbar"><div className="breadcrumb"><Button variant="ghost" size="icon" className="mobile-menu" aria-label="Open navigation" onClick={() => setOpen(!open)}><Menu/></Button><span>My workspace</span><span className="breadcrumb-divider">/</span><strong>{path === '/' ? 'Overview' : path.includes('journal') ? 'Daily journal' : path.includes('voice') ? 'Voice reflections' : nav.find(n => n.to === path)?.label || (path === '/settings' ? 'Settings & privacy' : 'Healthcare access')}</strong></div><div className="topbar-right"><span className={`connectivity ${online ? '' : 'offline'}`}><i/>{online ? 'Online' : 'Offline'}<span className="connection-caption"> · {online ? 'Device ready' : 'Saved on device'}</span></span><span className="topbar-divider"/><Button variant="ghost" size="icon" aria-label="Notifications" className="notification-button" onClick={() => setNotifications(!notifications)}><Bell size={19}/><i/></Button><span className="avatar avatar-small">EC</span></div></header>
+    <div className="main-shell"><header className="topbar"><div className="breadcrumb"><Button variant="ghost" size="icon" className="mobile-menu" aria-label="Open navigation" onClick={() => setOpen(!open)}><Menu/></Button><span>My workspace</span><span className="breadcrumb-divider">/</span><strong>{path === '/' ? 'Overview' : path.includes('journal') ? 'Daily journal' : path.includes('voice') ? 'Voice reflections' : nav.find(n => n.to === path)?.label || (path === '/settings' ? 'Settings & privacy' : 'Healthcare access')}</strong></div><div className="topbar-right"><span className={`connectivity ${online ? '' : 'offline'}`}><i/>{online ? 'Online' : 'Offline'}<span className="connection-caption"> · {online ? 'Device ready' : 'Saved on device'}</span></span><span className="topbar-divider"/><Button variant="ghost" size="icon" aria-label="Notifications" className="notification-button" onClick={() => setNotifications(!notifications)}><Bell size={19}/><i/></Button><span className="avatar avatar-small">{ini}</span></div></header>
       {notifications && <div className="notification-panel"><strong>Your updates</strong><p>Your daily check-in is ready.</p><p>Three demonstration wellbeing insights are available.</p><small>All mission data shown is a prototype.</small></div>}
       <main className="page-content">{children}</main><footer className="app-footer"><span><ShieldCheck size={13}/>Your space to reflect. Private by design.</span><span>ORBIT <span className="footer-dot">·</span> Demonstration mission</span></footer>
     </div>

@@ -3,16 +3,18 @@ import { Activity, ArrowRight, ArrowUpRight, BatteryMedium, BookOpen, Check, Che
 import { useEffect, useState } from 'react';
 import earth from '@/assets/earth-orbit.jpg';
 import { Button } from '@/components/ui/button';
+import { useProfile } from '@/lib/profile';
 import { OrbitChart } from './orbit-chart';
 import { formatDate, getVoiceNotes, todayDate, useJournals } from '@/lib/orbit';
 export function Dashboard() {
+  const { profile } = useProfile();
  const { entries } = useJournals(); const completed = entries.some(e => e.date === todayDate());
  const [voiceCount, setVoiceCount] = useState(0); const [lastVoice, setLastVoice] = useState('No recordings yet');
  const [month, setMonth] = useState(10);
  useEffect(() => { getVoiceNotes().then(notes => { setVoiceCount(notes.length); if (notes[0]) setLastVoice(formatDate(notes[0].date)); }).catch(() => {}); }, []);
  const days = new Date(2026, month + 1, 0).getDate(); const offset = (new Date(2026, month, 1).getDay() + 6) % 7;
  return <>
-  <div className="page-heading"><div><div className="eyebrow">YOUR WELLBEING, IN ORBIT</div><h1>Good morning, Elena <Sun size={27}/></h1><p>A little space for yourself, wherever your mission takes you.</p></div><span className="date-label">November 15, 2026 <span>·</span> Sunday</span></div>
+  <div className="page-heading"><div><div className="eyebrow">YOUR WELLBEING, IN ORBIT</div><h1>Hello, {profile?.name.split(' ')[0] ?? 'there'} <Sun size={27}/></h1><p>A little space for yourself, wherever your mission takes you.</p></div><span className="date-label">November 15, 2026 <span>·</span> Sunday</span></div>
   <section className="mission-banner"><img src={earth} width={1536} height={512} alt="Earth’s blue horizon viewed from orbit"/><div className="mission-banner-shade"/><div className="mission-banner-content"><span className="mission-badge"><i/>ACTIVE MISSION</span><h2>Ares Expedition 01</h2><p>Understanding the human behind every mission.</p><div className="mission-meta"><span><Radio size={15}/>International Space Station</span><span className="mission-meta-divider"/><span>Flight engineer</span></div></div><div className="mission-day"><span>MISSION DAY</span><strong>144<span>/ 180</span></strong><div className="mission-progress"><i/></div><span>Every day, a little more understanding.</span></div></section>
   <div className="section-header"><h2>Your daily space</h2><span><Clock3 size={14}/>A few minutes for you</span></div>
   <div className="daily-grid"><section className="daily-card journal-card"><div className="daily-card-icon"><BookOpen size={21}/></div><span className={`status-pill ${completed ? 'status-success' : ''}`}><i/>{completed ? 'Completed today' : 'Ready when you are'}</span><h3>Your daily check-in</h3><p>Pause. Reflect. Check in with yourself.<br/>Small moments build a bigger picture.</p><Button asChild className="daily-cta"><Link to="/journal">{completed ? 'View today’s check-in' : 'Complete today’s check-in'}<ArrowRight size={16}/></Link></Button><div className="card-bottom-note"><Clock3 size={13}/>3–5 minutes<span>Last entry: {entries[0] ? formatDate(entries[0].date).replace(', 2026', '') : 'None'}</span></div></section>
