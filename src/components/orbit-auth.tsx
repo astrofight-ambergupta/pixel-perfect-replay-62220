@@ -22,7 +22,9 @@ export function AuthScreen() {
     if (mode === 'up') {
       if (!name.trim()) { setMsg('Please enter your name.'); setBusy(false); return; }
       const { data, error } = await supabase.auth.signUp({ email, password: pw, options: { emailRedirectTo: window.location.origin, data: { display_name: name.trim() } } });
-      setMsg(error ? error.message : data.session ? '' : 'Check your email to confirm your account, then sign in.');
+      if (error) setMsg(error.message);
+      else if (data.user && !data.user.identities?.length) { setMode('in'); setMsg('An account with this email already exists. Sign in, or use “Forgot password?” to reset it.'); }
+      else setMsg(data.session ? '' : 'Check your email (and spam folder) to confirm your account, then sign in.');
     } else if (mode === 'in') {
       const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
       if (error) setMsg(error.message.includes('confirm') ? 'Please confirm your email first.' : 'Email or password doesn’t match.');
