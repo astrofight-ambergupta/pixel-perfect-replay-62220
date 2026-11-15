@@ -7,8 +7,8 @@ import { AiSettings } from './orbit-ai';
 import { ConsentSection } from './orbit-terms';
 import { ProfileForm } from './orbit-onboarding';
 import { CloudAccountSection, SyncSection } from './orbit-auth';
-import { loadSampleMonth } from '@/lib/sample-data';
-function SampleData(){const[msg,setMsg]=useState('');return <section className="privacy-section"><h2>Sample data</h2><p>Fill the past 30 days with realistic demonstration check-ins, including a mid-month stressful stretch and recovery. Days you already checked in are kept.</p><Button variant="outline" className="mt-5" onClick={()=>{try{setMsg(`Added ${loadSampleMonth()} days of sample check-ins.`);}catch{setMsg('Could not add sample data.');}}}>Load one month of sample data</Button>{msg&&<p role="status">{msg}</p>}</section>;}
+import { loadSampleMonth, loadSampleVoice } from '@/lib/sample-data';
+function SampleData(){const[msg,setMsg]=useState('');return <section className="privacy-section"><h2>Sample data</h2><p>Fill the past 21 days with demonstration check-ins and voice reflections, including a mid-month stressful stretch and recovery. Days you already checked in are kept.</p><Button variant="outline" className="mt-5" onClick={async()=>{try{const j=loadSampleMonth();const v=await loadSampleVoice();setMsg(`Added ${j} check-ins and ${v} voice reflections.`);}catch{setMsg('Could not add sample data.');}}}>Load 21 days of sample data</Button>{msg&&<p role="status">{msg}</p>}</section>;}
 import { useAuthUser, useMemberships } from '@/lib/cloud';
 function AccountAndSync(){const{user}=useAuthUser();const{list}=useMemberships(user?.id??null);if(!user)return null;return <><CloudAccountSection email={user.email??''}/><SyncSection userId={user.id} memberships={list}/></>;}
 import { saveProfile, useProfile } from '@/lib/profile';
