@@ -38,3 +38,6 @@ use the editor.
 - Escalation only reaches 'confirmed' with a real channel confirmation; simulated mode never claims a professional took over.
 - Only one official journal check-in per date; supplementary notes are separate entries, and all edits keep revisions.
 - Cache the application shell using a same-origin service worker; secure synchronization and encrypted mission storage remain future production work.
+- Testing mode (TESTING_FRESH_SESSIONS in src/lib/session.ts) wipes local ORBIT data on each new browser session so every test run starts from the name-confirmation screen.
+- Mission day is derived from the profile's mission start date (negative before launch, launch = day 1); never hardcode mission days.
+- Only one voice reflection per local date; live topic coverage comes from src/lib/ai/coverage.ts.

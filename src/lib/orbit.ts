@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 export type JournalKind = 'official' | 'supplementary';
 export type Journal = { id: string; kind?: JournalKind; note?: string; date: string; day: number; createdAt: string; updatedAt: string; ratings: Record<string, number>; reflections: Record<string, string>; revisions: { savedAt: string; ratings: Record<string, number>; reflections: Record<string, string> }[] };
-export type VoiceNote = { id: string; date: string; prompt: string; duration: number; phase: string; audio: Blob; transcript?: string };
+export type VoiceNote = { id: string; date: string; prompt: string; duration: number; phase: string; audio: Blob; transcript?: string; liveTranscript?: string; covered?: string[] };
 export const ratingQuestions = [
   ['Mood', 'How would you describe your overall mood today?'],
   ['Stress', 'How would you describe your current stress level?'],
@@ -20,12 +20,6 @@ export const prompts = {
   'Social wellbeing': ['How do you maintain relationships when you are away from people?', 'What makes you feel connected to others?', 'How do you express frustration or disagreement?', 'What helps you feel supported?'],
   'Cognitive functioning': ['How would you describe your normal concentration?', 'When do you feel most mentally alert?', 'How do you respond to mentally demanding tasks?', 'What does mental fatigue feel like for you?'],
 } as const;
-export const demoJournals: Journal[] = [13, 12, 11, 10, 9, 8, 7].map((day, i) => ({
-  id: `demo-${day}`, date: `2026-11-${String(day).padStart(2, '0')}`, day: 142 - i,
-  createdAt: `2026-11-${String(day).padStart(2, '0')}T18:30:00Z`, updatedAt: `2026-11-${String(day).padStart(2, '0')}T18:30:00Z`,
-  ratings: { Mood: 4, Stress: i % 2 + 2, Sleep: i % 2 + 3, Energy: 4, Concentration: 4, Connection: 5, Isolation: 1, Motivation: 4 },
-  reflections: { [reflectionQuestions[0]]: 'A full schedule of maintenance and research. Taking a short break between tasks helped me reset.', [reflectionQuestions[1]]: 'Shared dinner with the crew and watched the Earth pass beneath us.', [reflectionQuestions[2]]: 'Feeling grateful for the team. Looking forward to a call with home.' }, revisions: [],
-}));
 export function reviseJournal(original: Journal, ratings: Journal['ratings'], reflections: Journal['reflections'], now: string): Journal {
   return { ...original, ratings, reflections, updatedAt: now, revisions: [...original.revisions, { savedAt: original.updatedAt, ratings: original.ratings, reflections: original.reflections }] };
 }
@@ -36,7 +30,7 @@ export function canSaveJournal(entries: Journal[], entry: Journal) {
   return !entries.some(e => isOfficial(e) && e.date === entry.date && e.id !== entry.id);
 }
 export function useJournals() {
-  const [entries, setEntries] = useState<Journal[]>(demoJournals);
+  const [entries, setEntries] = useState<Journal[]>([]);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState('');
   useEffect(() => {
@@ -71,7 +65,15 @@ export async function saveVoiceNote(note: VoiceNote) {
 }
 export function sensorObservations(days: number) { return Array.from({ length: days === 1 ? 24 : days }, (_, i) => ({ day: i + 1, sleep: +(7.4 + Math.sin(i * .8) * .7).toFixed(1), mood: +(3.8 + Math.sin(i * .55) * .4).toFixed(1), energy: +(3.6 + Math.cos(i * .6) * .5).toFixed(1), heart: Math.round(63 + Math.sin(i * .7) * 7), hrv: Math.round(52 + Math.cos(i * .6) * 8), activity: Math.round(42 + Math.sin(i * .4) * 7), temperature: +(33.2 + Math.sin(i * .7) * .2).toFixed(1), respiration: +(14 + Math.cos(i * .8)).toFixed(1) })); }
 export const chartData = sensorObservations(30);
-export function missionDay(date = todayDate()) { return 144 + Math.round((new Date(`${date}T12:00:00`).getTime() - new Date('2026-11-15T12:00:00').getTime()) / 86400000); }
+export const MISSION_LENGTH = 180;
+function storedMissionStart() { try { return (JSON.parse(localStorage.getItem('orbit-profile-v1') || 'null') as { missionStart?: string } | null)?.missionStart ?? ''; } catch { return ''; } }
+/** Days relative to launch: negative before launch, launch day = 1, no day 0. */
+export function missionDayFrom(start: string, date: string) { if (!start) return 0; const diff = Math.round((new Date(`${date}T12:00:00`).getTime() - new Date(`${start}T12:00:00`).getTime()) / 86400000); return diff >= 0 ? diff + 1 : diff; }
+export function missionDay(date = todayDate(), start = storedMissionStart()) { return missionDayFrom(start, date); }
+export function formatMissionDay(d: number) { return d < 0 ? `T−${-d}` : String(d); }
+/** One voice reflection per local date. */
+export function localDate(iso: string) { const d = new Date(iso); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+export function canSaveVoiceNote(notes: { date: string }[], date = todayDate()) { return !notes.some(n => localDate(n.date) === date); }
 export function formatDate(date: string) { return new Date(date.length === 10 ? `${date}T12:00:00` : date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
 export function todayDate() { const date = new Date(); return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
 export function pageHead(title: string, description: string) { return { meta: [{ title: `${title} · ORBIT` }, { name: 'description', content: description }, { property: 'og:title', content: `${title} · ORBIT` }, { property: 'og:description', content: description }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary_large_image' }] }; }

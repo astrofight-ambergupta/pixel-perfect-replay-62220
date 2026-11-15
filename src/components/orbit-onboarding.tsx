@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { TESTING_FRESH_SESSIONS } from '@/lib/session';
 import { Orbit, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,8 +15,9 @@ export function ProfileForm({ initial, submitLabel, onSaved }: { initial?: Profi
   const [choice, setChoice] = useState(preset);
   const [custom, setCustom] = useState(preset === 'Self-describe' ? initial?.gender ?? '' : '');
   const [time, setTime] = useState(initial?.checkInTime ?? '');
+  const [missionStart, setMissionStart] = useState(initial?.missionStart ?? '');
   const [touched, setTouched] = useState(false);
-  const profile = { name: name.trim(), birthDate, gender: choice === 'Self-describe' ? custom.trim() : choice, checkInTime: time, onboardedAt: initial?.onboardedAt ?? new Date().toISOString() };
+  const profile = { name: name.trim(), birthDate, gender: choice === 'Self-describe' ? custom.trim() : choice, checkInTime: time, missionStart, onboardedAt: initial?.onboardedAt ?? new Date().toISOString() };
   const errors = validateProfile(profile, todayDate());
   const valid = Object.keys(errors).length === 0;
   return <form className="onboard-form" noValidate onSubmit={e => { e.preventDefault(); setTouched(true); if (valid) { saveProfile(profile); void requestReminderPermission(); onSaved?.(); } }}>
@@ -24,15 +26,27 @@ export function ProfileForm({ initial, submitLabel, onSaved }: { initial?: Profi
     <fieldset className="onboard-field"><legend>Gender</legend><div className="onboard-chips">{genderOptions.map(g => <button type="button" key={g} aria-pressed={choice === g} className={choice === g ? 'chip-on' : ''} onClick={() => setChoice(g)}>{g}</button>)}</div>
       {choice === 'Self-describe' && <Input aria-label="Describe your gender" value={custom} maxLength={50} placeholder="How do you describe your gender?" onChange={e => setCustom(e.target.value)} />}
       {touched && errors.gender && <small>{errors.gender}</small>}</fieldset>
+    <div className="onboard-field"><Label htmlFor="p-mission">When does your mission start?</Label><Input id="p-mission" type="date" value={missionStart} onChange={e => setMissionStart(e.target.value)} /><span className="onboard-hint">Launch day is mission day 1. Days before launch count down (T−).</span>{touched && errors.missionStart && <small>{errors.missionStart}</small>}</div>
     <div className="onboard-field"><Label htmlFor="p-time">What time do you plan to write your daily check-in?</Label><Input id="p-time" type="time" value={time} onChange={e => setTime(e.target.value)} /><span className="onboard-hint">ORBIT will remind you at this time each day.</span>{touched && errors.checkInTime && <small>{errors.checkInTime}</small>}</div>
     <Button type="submit" disabled={!valid} size="lg">{submitLabel} <ArrowRight /></Button>
   </form>;
 }
 
 export function OrbitOnboarding() {
+  const [name, setName] = useState('');
+  const [confirmed, setConfirmed] = useState(false);
   return <div className="onboard-screen"><section className="onboard-card">
     <div className="onboard-brand"><Orbit size={40} strokeWidth={1.4} /><div><strong>ORBIT</strong><span>Understanding the human behind every mission.</span></div></div>
-    <h1>Welcome aboard</h1><p>Tell us a little about yourself. These details stay on this device.</p>
-    <ProfileForm submitLabel="Begin mission" />
+    {TESTING_FRESH_SESSIONS && <p className="onboard-hint" role="note">Testing mode: data resets each time the app is opened.</p>}
+    {!confirmed ? <>
+      <h1>Who is checking in?</h1><p>Enter the astronaut’s name to confirm the right person.</p>
+      <form className="onboard-form" onSubmit={e => { e.preventDefault(); if (name.trim()) setConfirmed(true); }}>
+        <div className="onboard-field"><Label htmlFor="who">Astronaut name</Label><Input id="who" value={name} maxLength={80} autoComplete="name" placeholder="Your full name" onChange={e => setName(e.target.value)} /></div>
+        <Button type="submit" size="lg" disabled={!name.trim()}>Confirm and create profile <ArrowRight /></Button>
+      </form>
+    </> : <>
+      <h1>Welcome aboard, {name.trim().split(' ')[0]}</h1><p>Create your profile. These details stay on this device.</p>
+      <ProfileForm initial={{ name: name.trim(), birthDate: '', gender: '', checkInTime: '', missionStart: '' }} submitLabel="Begin mission" />
+    </>}
   </section></div>;
 }
