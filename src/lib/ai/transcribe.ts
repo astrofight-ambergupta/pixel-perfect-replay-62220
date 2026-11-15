@@ -2,6 +2,7 @@
 type Asr = (audio: Float32Array) => Promise<{ text: string } | { text: string }[]>;
 let asr: Promise<Asr> | null = null;
 async function getAsr() {
+  if (import.meta.env.SSR) throw new Error('browser only');
   return asr ??= import('@huggingface/transformers').then(async t => (await t.pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en')) as unknown as Asr).catch(e => { asr = null; throw e; });
 }
 async function decode(blob: Blob) {
