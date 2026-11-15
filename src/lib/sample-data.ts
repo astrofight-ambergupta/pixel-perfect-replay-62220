@@ -1,7 +1,8 @@
 import { missionDay, saveVoiceNote, getVoiceNotes, localDate, todayDate, type Journal } from './orbit';
 import { voiceTopics } from './ai/coverage';
 export const SAMPLE_DAYS = 21;
-/** Builds 30 days of realistic official check-ins ending yesterday, with a mid-month stress dip and recovery. */
+export const SAMPLE_DAYS_50 = 50;
+/** Builds realistic official check-ins ending yesterday, with a mid-period stress dip and recovery. */
 export function sampleMonth(today = todayDate(), days = SAMPLE_DAYS): Journal[] {
   const pos = ['Shared dinner with the crew and laughed a lot.', 'Experiment ran cleanly on the first try.', 'Video call with family this evening.', 'Watched the sunrise over the Pacific from the cupola.', 'Good workout, felt strong.'];
   const hard = ['Long EVA prep day, tiring.', 'Slept poorly, noisy fans.', 'Schedule changed last minute, felt rushed.', 'Missed home today.', 'Equipment fault took hours to fix.'];
@@ -17,14 +18,20 @@ export function sampleMonth(today = todayDate(), days = SAMPLE_DAYS): Journal[] 
   }
   return out;
 }
-export function loadSampleMonth() {
+export function loadSampleMonth(days = SAMPLE_DAYS) {
   const existing: Journal[] = JSON.parse(localStorage.getItem('orbit-journals-v1') || '[]');
   const taken = new Set(existing.filter(e => (e.kind ?? 'official') === 'official').map(e => e.date));
-  const added = sampleMonth().filter(e => !taken.has(e.date));
+  const added = sampleMonth(todayDate(), days).filter(e => !taken.has(e.date));
   const next = [...added, ...existing].sort((a, b) => b.date.localeCompare(a.date));
   localStorage.setItem('orbit-journals-v1', JSON.stringify(next));
   window.dispatchEvent(new Event('orbit-journals-change')); window.dispatchEvent(new Event('orbit-ai-refresh'));
   return added.length;
+}
+/** Adds 50 days of sample check-ins and voice reflections, skipping days already filled. */
+export async function loadSample50() {
+  const journals = loadSampleMonth(SAMPLE_DAYS_50);
+  const voice = await loadSampleVoice(todayDate(), SAMPLE_DAYS_50);
+  return { journals, voice };
 }
 
 function silentWav(seconds = 1) { const rate = 8000, n = rate * seconds, b = new ArrayBuffer(44 + n), v = new DataView(b); const w = (o: number, t: string) => [...t].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
