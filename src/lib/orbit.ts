@@ -1,0 +1,66 @@
+import { useEffect, useState } from 'react';
+
+export type Journal = { id: string; date: string; day: number; createdAt: string; updatedAt: string; ratings: Record<string, number>; reflections: Record<string, string>; revisions: { savedAt: string; ratings: Record<string, number>; reflections: Record<string, string> }[] };
+export type VoiceNote = { id: string; date: string; prompt: string; duration: number; phase: string; audio: Blob };
+export const ratingQuestions = [
+  ['Mood', 'How would you describe your overall mood today?'],
+  ['Stress', 'How would you describe your current stress level?'],
+  ['Sleep', 'How well did you sleep?'],
+  ['Energy', 'How would you describe your energy levels?'],
+  ['Concentration', 'How easy has it been to concentrate today?'],
+  ['Connection', 'How connected have you felt to your crewmates?'],
+  ['Isolation', 'Have you experienced feelings of isolation or disconnection?'],
+  ['Motivation', 'How would you describe your motivation today?'],
+] as const;
+export const reflectionQuestions = ['What was the most challenging part of today?', 'What was something positive that happened today?', 'Is there anything else you would like to reflect on?'];
+export const prompts = {
+  'Personal reflection': ['Describe what a normal day looks like for you.', 'What activities make you feel most fulfilled?', 'What do you typically do after a challenging day?', 'What motivates you when you are under pressure?'],
+  'Stress & adaptation': ['Describe a recent situation where you experienced significant pressure.', 'How do you respond to unexpected changes?', 'What helps you regain focus after a difficult experience?', 'How do you communicate when you feel overwhelmed?'],
+  'Social wellbeing': ['How do you maintain relationships when you are away from people?', 'What makes you feel connected to others?', 'How do you express frustration or disagreement?', 'What helps you feel supported?'],
+  'Cognitive functioning': ['How would you describe your normal concentration?', 'When do you feel most mentally alert?', 'How do you respond to mentally demanding tasks?', 'What does mental fatigue feel like for you?'],
+};
+export const demoJournals: Journal[] = [13, 12, 11, 10, 9, 8, 7].map((day, i) => ({
+  id: `demo-${day}`, date: `2026-11-${String(day).padStart(2, '0')}`, day: 142 - i,
+  createdAt: `2026-11-${String(day).padStart(2, '0')}T18:30:00Z`, updatedAt: `2026-11-${String(day).padStart(2, '0')}T18:30:00Z`,
+  ratings: { Mood: 4, Stress: i % 2 + 2, Sleep: i % 2 + 3, Energy: 4, Concentration: 4, Connection: 5, Isolation: 1, Motivation: 4 },
+  reflections: { [reflectionQuestions[0]]: 'A full schedule of maintenance and research. Taking a short break between tasks helped me reset.', [reflectionQuestions[1]]: 'Shared dinner with the crew and watched the Earth pass beneath us.', [reflectionQuestions[2]]: 'Feeling grateful for the team. Looking forward to a call with home.' }, revisions: [],
+}));
+export function reviseJournal(original: Journal, ratings: Journal['ratings'], reflections: Journal['reflections'], now: string): Journal {
+  return { ...original, ratings, reflections, updatedAt: now, revisions: [...original.revisions, { savedAt: original.updatedAt, ratings: original.ratings, reflections: original.reflections }] };
+}
+export function useJournals() {
+  const [entries, setEntries] = useState<Journal[]>(demoJournals);
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    try { const saved = localStorage.getItem('orbit-journals-v1'); if (saved) setEntries(JSON.parse(saved)); } catch { setError('Your saved journal could not be loaded. Please do not clear this device’s storage.'); }
+    setReady(true);
+  }, []);
+  function save(entry: Journal) {
+    const next = [entry, ...entries.filter(e => e.id !== entry.id)].sort((a, b) => b.date.localeCompare(a.date));
+    try { localStorage.setItem('orbit-journals-v1', JSON.stringify(next)); setEntries(next); return true; }
+    catch { setError('This device could not save your entry. Free up storage and try again.'); return false; }
+  }
+  return { entries, ready, save, error };
+}
+function openVoiceDatabase(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('orbit-voice-v1', 1);
+    request.onupgradeneeded = () => request.result.createObjectStore('notes', { keyPath: 'id' });
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+export async function getVoiceNotes(): Promise<VoiceNote[]> {
+  const db = await openVoiceDatabase();
+  return new Promise((resolve, reject) => { const tx = db.transaction('notes', 'readonly'); const req = tx.objectStore('notes').getAll(); req.onsuccess = () => resolve(req.result.sort((a: VoiceNote, b: VoiceNote) => b.date.localeCompare(a.date))); req.onerror = () => reject(req.error); tx.oncomplete = () => db.close(); });
+}
+export async function saveVoiceNote(note: VoiceNote) {
+  const db = await openVoiceDatabase();
+  return new Promise<void>((resolve, reject) => { const tx = db.transaction('notes', 'readwrite'); tx.objectStore('notes').put(note); tx.oncomplete = () => { db.close(); resolve(); }; tx.onerror = () => reject(tx.error); });
+}
+export function sensorObservations(days: number) { return Array.from({ length: days === 1 ? 24 : days }, (_, i) => ({ day: i + 1, sleep: +(7.4 + Math.sin(i * .8) * .7).toFixed(1), mood: +(3.8 + Math.sin(i * .55) * .4).toFixed(1), energy: +(3.6 + Math.cos(i * .6) * .5).toFixed(1), heart: Math.round(63 + Math.sin(i * .7) * 7), hrv: Math.round(52 + Math.cos(i * .6) * 8), activity: Math.round(42 + Math.sin(i * .4) * 7), temperature: +(33.2 + Math.sin(i * .7) * .2).toFixed(1), respiration: +(14 + Math.cos(i * .8)).toFixed(1) })); }
+export const chartData = sensorObservations(30);
+export function formatDate(date: string) { return new Date(date.length === 10 ? `${date}T12:00:00` : date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+export function todayDate() { const date = new Date(); return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
+export function pageHead(title: string, description: string) { return { meta: [{ title: `${title} · ORBIT` }, { name: 'description', content: description }, { property: 'og:title', content: `${title} · ORBIT` }, { property: 'og:description', content: description }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary_large_image' }] }; }
