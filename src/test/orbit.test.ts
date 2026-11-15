@@ -29,3 +29,17 @@ describe('Voice reflection', () => {
   it('allows only one reflection per day', () => { expect(canSaveVoiceNote([], '2026-11-15')).toBe(true); expect(canSaveVoiceNote([{ date: '2026-11-15T15:00:00' }], '2026-11-15')).toBe(false); expect(canSaveVoiceNote([{ date: '2026-11-14T15:00:00' }], '2026-11-15')).toBe(true); });
   it('tracks which topics have been spoken about', () => { const c = promptCoverage('The crew and I had a call with family. Work pressure was a little stressful.'); expect(c.social).toBe(true); expect(c.stress).toBe(true); expect(c.cognitive).toBe(false); });
 });
+
+import { todayDate as _td } from '@/lib/orbit';
+import { allTopicsCovered } from '@/lib/ai/coverage';
+describe('time zone and voice rules', () => {
+  it('today follows the chosen time zone', () => {
+    const now = new Date('2026-11-15T03:00:00Z');
+    expect(_td('America/Edmonton', now)).toBe('2026-11-14');
+    expect(_td('Asia/Tokyo', now)).toBe('2026-11-15');
+  });
+  it('voice reflection needs all four topics', () => {
+    expect(allTopicsCovered({ personal: true, stress: true, social: true }, {})).toBe(false);
+    expect(allTopicsCovered({ personal: true, stress: true, social: true }, { cognitive: true })).toBe(true);
+  });
+});

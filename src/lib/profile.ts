@@ -1,8 +1,9 @@
 import { resetSessionIfNew } from './session';
 import { activeAccountId, stashActive } from './accounts';
+import { isValidTimeZone } from './orbit';
 import { useEffect, useState } from 'react';
 
-export type Profile = { name: string; birthDate: string; gender: string; checkInTime: string; missionStart: string; onboardedAt?: string };
+export type Profile = { name: string; birthDate: string; gender: string; checkInTime: string; missionStart: string; timeZone?: string; onboardedAt?: string };
 export const genderOptions = ['Female', 'Male', 'Non-binary', 'Prefer not to say', 'Self-describe'] as const;
 const KEY = 'orbit-profile-v1';
 const EVENT = 'orbit-profile-change';
@@ -16,6 +17,7 @@ export function validateProfile(p: Profile, today: string): Partial<Record<keyof
   if (!p.gender.trim()) e.gender = 'Please choose an option.';
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(p.checkInTime ?? '')) e.checkInTime = 'Please choose a daily check-in time.';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(p.missionStart ?? '')) e.missionStart = 'Please enter your mission start date.';
+  if (p.timeZone !== undefined && !isValidTimeZone(p.timeZone)) e.timeZone = 'Please choose a valid time zone.';
   return e;
 }
 export function initials(name: string) { return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase()).join('') || '··'; }

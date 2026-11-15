@@ -6,17 +6,17 @@ import { Button } from '@/components/ui/button';
 import { useProfile } from '@/lib/profile';
 import { OrbitChart } from './orbit-chart';
 import { GlanceReport } from './orbit-ai';
-import { formatDate, formatMissionDay, getVoiceNotes, MISSION_LENGTH, missionDayFrom, isOfficial, todayDate, useJournals } from '@/lib/orbit';
+import { formatDate, formatMissionDay, getVoiceNotes, MISSION_LENGTH, missionDayFrom, isOfficial, todayDate, useJournals, useToday } from '@/lib/orbit';
 export function Dashboard() {
   const { profile } = useProfile();
  const { entries } = useJournals(); const completed = entries.some(e => isOfficial(e) && e.date === todayDate());
  const [voiceCount, setVoiceCount] = useState(0); const [lastVoice, setLastVoice] = useState('No recordings yet');
  const [now, setNow] = useState<Date | null>(null);
  const [month, setMonth] = useState(10); const [year, setYear] = useState(2026);
- useEffect(() => { const d = new Date(); setNow(d); setMonth(d.getMonth()); setYear(d.getFullYear()); }, []);
+ useEffect(() => { const d = new Date(); setNow(d); const [y, m] = todayDate().split('-').map(Number); setMonth(m! - 1); setYear(y!); }, []);
  useEffect(() => { getVoiceNotes().then(notes => { setVoiceCount(notes.length); if (notes[0]) setLastVoice(formatDate(notes[0].date)); }).catch(() => {}); }, []);
  const days = new Date(year, month + 1, 0).getDate(); const offset = (new Date(year, month, 1).getDay() + 6) % 7;
- const ym = `${year}-${String(month + 1).padStart(2, '0')}`; const today = now ? todayDate() : '';
+ const ym = `${year}-${String(month + 1).padStart(2, '0')}`; const liveToday = useToday(); const today = now ? liveToday : '';
   const md = profile && today ? missionDayFrom(profile.missionStart, today) : 0; const pre = md < 0; const pct = pre ? 0 : Math.min(100, (md / MISSION_LENGTH) * 100);
  const official = new Set(entries.filter(isOfficial).map(e => e.date));
  return <>

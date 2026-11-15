@@ -10,3 +10,5 @@ export function promptCoverage(transcript: string): Record<TopicId, boolean> {
   const words = transcript.toLowerCase().split(/[^a-z']+/).filter(Boolean);
   return Object.fromEntries(voiceTopics.map(t => [t.id, new Set(t.words.filter(w => words.some(x => x.startsWith(w)))).size >= 2])) as Record<TopicId, boolean>;
 }
+/** Every topic must be covered (spoken or ticked by hand) before a reflection can be saved. */
+export function allTopicsCovered(auto: Partial<Record<TopicId, boolean>>, manual: Partial<Record<TopicId, boolean>>) { return voiceTopics.every(t => auto[t.id] || manual[t.id]); }

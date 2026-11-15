@@ -73,8 +73,20 @@ export function missionDayFrom(start: string, date: string) { if (!start) return
 export function missionDay(date = todayDate(), start = storedMissionStart()) { return missionDayFrom(start, date); }
 export function formatMissionDay(d: number) { return d < 0 ? `T−${-d}` : String(d); }
 /** One voice reflection per local date. */
-export function localDate(iso: string) { const d = new Date(iso); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+export function localDate(iso: string) { return todayDate(undefined, new Date(iso)); }
 export function canSaveVoiceNote(notes: { date: string }[], date = todayDate()) { return !notes.some(n => localDate(n.date) === date); }
 export function formatDate(date: string) { return new Date(date.length === 10 ? `${date}T12:00:00` : date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
-export function todayDate() { const date = new Date(); return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
+export function deviceTimeZone() { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { return 'UTC'; } }
+export function isValidTimeZone(tz: string) { try { new Intl.DateTimeFormat('en-CA', { timeZone: tz }); return !!tz; } catch { return false; } }
+function storedTimeZone() { try { const tz = (JSON.parse(localStorage.getItem('orbit-profile-v1') || 'null') as { timeZone?: string } | null)?.timeZone; return tz && isValidTimeZone(tz) ? tz : deviceTimeZone(); } catch { return deviceTimeZone(); } }
+/** Today's date (YYYY-MM-DD) in the profile's chosen time zone; works offline via built-in Intl data. */
+export function todayDate(timeZone?: string, now = new Date()) { const tz = timeZone ?? (typeof localStorage === 'undefined' ? deviceTimeZone() : storedTimeZone()); return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now); }
+/** Live "today" that updates at midnight, on wake/focus and on profile changes. */
+export function useToday() {
+  const [today, setToday] = useState('');
+  useEffect(() => { const u = () => setToday(todayDate()); u(); const id = setInterval(u, 30000); const vis = () => document.visibilityState === 'visible' && u();
+    document.addEventListener('visibilitychange', vis); window.addEventListener('focus', u); window.addEventListener('orbit-profile-change', u);
+    return () => { clearInterval(id); document.removeEventListener('visibilitychange', vis); window.removeEventListener('focus', u); window.removeEventListener('orbit-profile-change', u); }; }, []);
+  return today;
+}
 export function pageHead(title: string, description: string) { return { meta: [{ title: `${title} · ORBIT` }, { name: 'description', content: description }, { property: 'og:title', content: `${title} · ORBIT` }, { property: 'og:description', content: description }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary_large_image' }] }; }

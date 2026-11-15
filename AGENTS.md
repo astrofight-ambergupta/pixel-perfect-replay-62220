@@ -43,3 +43,4 @@ use the editor.
 
 - Device accounts (src/lib/accounts.ts) hold salted PBKDF2 password hashes; each account's data is vaulted and swapped into live keys on sign-in so accounts stay isolated. This is identity confirmation, not a security boundary.
 - Testing mode (TESTING_FRESH_SESSIONS in src/lib/session.ts) keeps accounts and profiles but wipes check-ins, voice, AI memory and reminders on each new browser session.
+- Dates derive from the profile's time zone via todayDate()/useToday() (built-in Intl data, offline); never use the raw device date.
