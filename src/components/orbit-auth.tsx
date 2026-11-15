@@ -10,7 +10,7 @@ import { lastSync, pendingSyncRequests, syncNow, SYNC_EVENT } from '@/lib/sync';
 import { formatDate } from '@/lib/orbit';
 
 export function BrandMark() {
-  return <div className="onboard-brand"><Orbit size={40} strokeWidth={1.4} /><div><strong>AstraCare</strong><span>Understanding the human behind every mission.</span></div></div>;
+  return <div className="onboard-brand"><Orbit size={40} strokeWidth={1.4} /><div><strong>AstraCare- Mental Health</strong><span>Understanding the human behind every mission.</span></div></div>;
 }
 
 export function AuthScreen() {
