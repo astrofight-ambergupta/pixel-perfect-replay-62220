@@ -13,7 +13,7 @@ export type DimTrend = {
   direction: 'improving' | 'declining' | 'steady' | 'unknown'; volatility: number | null; statement: string;
 };
 export type Pattern = { kind: 'link' | 'weekday' | 'streak' | 'theme' | 'swing'; text: string; strength: 'clear' | 'possible' };
-export type TrendReport = { days: number; trends: DimTrend[]; patterns: Pattern[] };
+export type TrendReport = { days: number; trends: DimTrend[]; patterns: Pattern[]; themeDays?: Record<string, string[]>; scores?: Record<string, Partial<Record<Dimension, number>>> };
 
 const avg = (v: number[]) => v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
 const addDays = (d: string, n: number) => { const x = new Date(`${d}T12:00:00Z`); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
@@ -71,12 +71,19 @@ export function computeTrends(entries: Journal[], today: string, voice: Pick<Voi
   const text = [...official.filter(e => e.date >= from).flatMap(e => Object.values(e.reflections)), ...voice.filter(v => v.date.slice(0, 10) >= from).map(v => v.transcript ?? '')].join(' ').toLowerCase();
   const themes: [string, RegExp][] = [['workload / schedule pressure', /\b(deadline|workload|behind|busy|overtime|timeline|schedule)\b/g], ['tiredness', /\b(tired|exhausted|fatigue|drained|sleepy)\b/g], ['missing home', /\b(home|family|miss|kids|partner)\b/g], ['noise or sleep disruption', /\b(noise|woke|insomnia|restless|fan|alarm)\b/g], ['exercise', /\b(exercise|workout|treadmill|run|gym)\b/g], ['crew friction', /\b(argument|tension|conflict|frustrat)\w*/g]];
   for (const [name, re] of themes) { const n = text.match(re)?.length ?? 0; if (n >= 3) patterns.push({ kind: 'theme', strength: n >= 6 ? 'clear' : 'possible', text: `“${name}” came up ${n} times in your reflections over the last two weeks.` }); }
-  return { days: official.length, trends, patterns };
+  // Which dates mention each theme (last 8 weeks) — used to tailor advice.
+  const themeDays: Record<string, string[]> = {};
+  const textByDate = new Map<string, string>();
+  for (const e of official.filter(e => e.date >= start56)) textByDate.set(e.date, Object.values(e.reflections).join(' ').toLowerCase());
+  for (const v of voice) { const d = v.date.slice(0, 10); if (d >= start56) textByDate.set(d, `${textByDate.get(d) ?? ''} ${(v.transcript ?? '').toLowerCase()}`); }
+  for (const [name, re] of themes) themeDays[name] = [...textByDate].filter(([, t]) => new RegExp(re.source).test(t)).map(([d]) => d);
+  const scores = Object.fromEntries([...byDate].filter(([d]) => d >= start56));
+  return { days: official.length, trends, patterns, themeDays, scores };
 }
 
-export type ActionPlan = { id: string; title: string; why: string; steps: string[]; when: string; check: string; dimension: Dimension | null };
+export type ActionPlan = { id: string; title: string; goal: string; personal: string[]; why: string; steps: string[]; when: string; check: string; dimension: Dimension | null };
 
-const library: Record<Dimension, Omit<ActionPlan, 'why' | 'id' | 'dimension'>> = {
+const library: Record<Dimension, Omit<ActionPlan, 'why' | 'id' | 'dimension' | 'goal' | 'personal'>> = {
   sleep: { title: 'Rebuild a consistent sleep window', when: 'Start tonight; keep it for 7 nights', check: 'Your Sleep rating averages 3.5+ for a week, or wake-ups drop.',
     steps: ['Pick a fixed lights-out and wake time that fits your schedule, and keep it within 30 minutes every day, including off-days.', 'Set a 45-minute wind-down alarm: dim cabin lights, stop screens and mission email, and do one calm activity (reading, stretching, music).', 'Stop caffeine at least 8 hours before lights-out and avoid heavy exercise in the last 2 hours.', 'Prepare your sleep station in advance: eye mask, earplugs, temperature set slightly cool, sleeping bag secured.', 'If you are awake for more than 20 minutes, get up, do something quiet in low light, and return when drowsy instead of lying there.'] },
   stress: { title: 'Build decompression into your day', when: 'Twice a day, every day this week', check: 'Your Stress rating drops by at least 1 point compared with this week.',
@@ -91,6 +98,55 @@ const library: Record<Dimension, Omit<ActionPlan, 'why' | 'id' | 'dimension'>> =
     steps: ['Work in 50-minute focus blocks followed by a 10-minute break away from screens.', 'At the start of each shift, write the top 3 tasks; do the hardest one first.', 'Batch messages and email into 2–3 fixed check times instead of answering continuously.', 'Use checklists for multi-step procedures so you are not holding steps in memory.', 'If two or more days in a row feel overloaded, flag it to your mission planner so tasks can be rebalanced.'] },
 };
 
+const goals: Record<Dimension, string> = {
+  sleep: 'You should aim for 7.5–8 hours of sleep every night, going to bed and waking up at the same time each day.',
+  stress: 'You should take two 10-minute decompression breaks every day — one mid-shift and one after your last task.',
+  energy: 'You should protect your energy with a daily exercise session, regular meals and a short afternoon reset.',
+  mood: 'You should plan one thing you genuinely enjoy every day and notice what lifted you.',
+  connection: 'You should have at least one real conversation every day — with crew or with someone at home.',
+  cognitive: 'You should work in focused 50-minute blocks with real breaks, and write down your top 3 tasks each morning.',
+};
+const dayNames = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'];
+const themeAdvice: Record<string, Partial<Record<Dimension, string>> & { any: string }> = {
+  'workload / schedule pressure': { any: 'raise the overrunning tasks with your mission planner this week instead of absorbing them', sleep: 'stop work-related reading at least 45 minutes before lights-out, and write tomorrow’s to-do list first so it isn’t on your mind in bed', cognitive: 'ask your planner to move one non-critical task off your busiest day' },
+  'tiredness': { any: 'move your most demanding task to the time of day you feel freshest', sleep: 'go to bed 30 minutes earlier for the next 5 nights rather than trying to catch up on off-days' },
+  'missing home': { any: 'book a fixed call or message slot with home 2–3 times a week so you have something to look forward to', connection: 'schedule calls home at the same time each week, and keep a photo or small item from home at your sleep station', mood: 'record a short message or write a letter home on the days you feel low' },
+  'noise or sleep disruption': { any: 'use earplugs and an eye mask every night', sleep: 'use earplugs and an eye mask every night, and ask whether your sleep station can be moved away from fans or equipment noise' },
+  'exercise': { any: 'keep your exercise sessions as fixed timeline items — they line up with your better days', sleep: 'finish exercise at least 2 hours before lights-out' },
+  'crew friction': { any: 'have a short, calm conversation about the friction early, or ask the commander to help set shared ground rules', connection: 'plan one shared crew meal or activity this week that isn’t about work' },
+};
+
+/** "Based on what I've noticed about you" — specific how-tos built from the user's own data. */
+function personalTips(d: Dimension, t: DimTrend, report: TrendReport): string[] {
+  const tips: string[] = []; const label = friendly[d]; const scores = report.scores ?? {};
+  // Themes that line up with worse days for this dimension
+  for (const [name, dates] of Object.entries(report.themeDays ?? {})) {
+    const on = dates.map(x => scores[x]?.[d]).filter((v): v is number => v !== undefined);
+    const off = Object.entries(scores).filter(([x]) => !dates.includes(x)).map(([, v]) => v[d]).filter((v): v is number => v !== undefined);
+    if (on.length < 2 || off.length < 2) continue;
+    const diff = avg(on)! - avg(off)!; const adv = themeAdvice[name]!; const how = adv[d] ?? adv.any;
+    if (name === 'exercise' ? diff >= .4 : diff <= -.4) tips.push(`I noticed that on days you mentioned ${name}, your ${label} averaged ${avg(on)!.toFixed(1)}/5 vs ${avg(off)!.toFixed(1)} on other days. So ${how}.`);
+  }
+  // Weekday dip for this dimension
+  const wk: number[][] = Array.from({ length: 7 }, () => []);
+  for (const [x, v] of Object.entries(scores)) if (v[d] !== undefined) wk[new Date(`${x}T12:00:00Z`).getUTCDay()]!.push(v[d]!);
+  const all = avg(wk.flat()); const worst = wk.map((v, i) => ({ i, m: v.length >= 2 ? avg(v)! : 99 })).sort((a, b) => a.m - b.m)[0]!;
+  if (all !== null && worst.m !== 99 && all - worst.m >= .5) tips.push(`Your ${label} is usually lowest on ${dayNames[worst.i]} (${worst.m.toFixed(1)} vs ${all.toFixed(1)}). Prepare the evening before: ${d === 'sleep' ? 'go to bed on time the night before and avoid late tasks' : d === 'connection' ? 'book a call or shared meal on that day' : 'put a lighter task and a short break on that day’s timeline'}.`);
+  // Link patterns
+  for (const p of report.patterns.filter(p => p.kind === 'link')) {
+    const txt = p.text.toLowerCase();
+    if (d === 'sleep' && txt.startsWith('higher-stress')) tips.push('Your stressful days are followed by worse nights. On those days, do the 5-minute “worry dump” (write worries + one next step) before your wind-down, not in bed.');
+    else if (d !== 'sleep' && txt.startsWith('your sleep') && txt.includes(label)) tips.push(`Your ${label} rises and falls with your sleep, so the quickest way to lift it is the sleep plan: same bedtime every night for a week. ${p.text.split('.').slice(1).join('.').trim()}`);
+    else if (d === 'mood' && txt.startsWith('your connection')) tips.push('Your mood is better on days you feel connected. Pair your hardest days with a planned chat with crew or home.');
+  }
+  // Current level / direction
+  if (t.last7 !== null && t.prev7 !== null && t.last7 < t.prev7 - .3) tips.push(`Your ${label} dropped from ${t.prev7.toFixed(1)} to ${t.last7.toFixed(1)} this week — start with steps 1 and 2 below for the next 3 days, then add the rest.`);
+  if ((t.volatility ?? 0) >= 1) tips.push(`Your ${label} swings a lot from day to day, so consistency matters more than intensity: same times, same routine, even on good days.`);
+  const best = Object.entries(scores).filter(([, v]) => (v[d] ?? 0) >= 4).map(([x]) => x).sort().slice(-1)[0];
+  if (best) tips.push(`Your last strong ${label} day was ${best}. Look back at that check-in and repeat what you did that day.`);
+  return tips.slice(0, 4);
+}
+
 /** Concrete, step-by-step suggestions grounded in the user's own trends. */
 export function buildActionPlans(report: TrendReport, lowerNow: Dimension[]): ActionPlan[] {
   const score = (t: DimTrend) => (lowerNow.includes(t.dimension) ? 2 : 0) + (t.direction === 'declining' ? 1.5 : 0) + (t.last7 !== null && t.last7 < 3 ? 1 : 0) + ((t.volatility ?? 0) >= 1 ? .5 : 0);
@@ -98,14 +154,14 @@ export function buildActionPlans(report: TrendReport, lowerNow: Dimension[]): Ac
   const plans = ranked.map((t): ActionPlan => {
     const link = report.patterns.find(p => p.kind === 'link' && p.text.toLowerCase().includes(friendly[t.dimension]));
     const why = [`${t.statement}`, lowerNow.includes(t.dimension) ? 'This is below your personal baseline.' : '', link ? `Related pattern: ${link.text}` : ''].filter(Boolean).join(' ');
-    return { id: t.dimension, dimension: t.dimension, why, ...library[t.dimension] };
+    return { id: t.dimension, dimension: t.dimension, why, goal: goals[t.dimension], personal: personalTips(t.dimension, t, report), ...library[t.dimension] };
   });
   // Sleep often drives other dimensions: add it if a clear sleep link exists and it isn't already included.
   const sleepLink = report.patterns.find(p => p.kind === 'link' && p.text.startsWith('Your sleep') && p.strength === 'clear');
-  if (sleepLink && !plans.some(p => p.id === 'sleep') && plans.length < 3) plans.push({ id: 'sleep', dimension: 'sleep', why: `${sleepLink.text} Improving sleep is likely to help the other areas too.`, ...library.sleep });
+  if (sleepLink && !plans.some(p => p.id === 'sleep') && plans.length < 3) plans.push({ id: 'sleep', dimension: 'sleep', why: `${sleepLink.text} Improving sleep is likely to help the other areas too.`, goal: goals.sleep, personal: personalTips('sleep', report.trends.find(t => t.dimension === 'sleep')!, report), ...library.sleep });
   if (!plans.length && report.trends.some(t => t.direction !== 'unknown')) {
     const best = [...report.trends].filter(t => t.last7 !== null).sort((a, b) => b.last7! - a.last7!)[0];
-    plans.push({ id: 'maintain', dimension: null, title: 'Keep the routines that are working', why: `Your scores are steady or improving${best ? `; ${friendly[best.dimension]} is your strongest area at ${best.last7!.toFixed(1)}/5` : ''}.`, when: 'Ongoing', check: 'Scores stay within your usual range.',
+    plans.push({ id: 'maintain', dimension: null, title: 'Keep the routines that are working', goal: 'You should keep your current routines fixed on your timeline, especially before busy periods.', personal: [], why: `Your scores are steady or improving${best ? `; ${friendly[best.dimension]} is your strongest area at ${best.last7!.toFixed(1)}/5` : ''}.`, when: 'Ongoing', check: 'Scores stay within your usual range.',
       steps: ['Write down the 3 habits you think are helping most right now (sleep time, exercise, calls home, etc.).', 'Keep them on your timeline as fixed items so they survive busy weeks.', 'Keep checking in daily so changes are spotted early.', 'Before known busy periods (EVAs, experiments), plan in advance which habits you will protect.'] });
   }
   return plans;

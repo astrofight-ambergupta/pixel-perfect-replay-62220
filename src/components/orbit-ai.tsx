@@ -101,9 +101,10 @@ export function Companion() {
     </div>
     <section className="surface"><div className="panel-title"><div><h3>Your action plan</h3><p>Specific steps based on your own trends. Optional — adapt them to your schedule.</p></div></div>
       {paused ? <p className="muted">Paused while a professional is being reached.</p> : plans.length ? <div className="plan-grid">{plans.map(p => <article key={p.id} className="plan-card">
-        <h4>{p.title}</h4><p className="plan-why"><strong>Why: </strong>{p.why}</p>
-        <ol className="plan-steps">{p.steps.map(st => <li key={st}>{st}</li>)}</ol>
-        <p className="plan-meta"><strong>When:</strong> {p.when}</p><p className="plan-meta"><strong>How you’ll know it’s working:</strong> {p.check}</p>
+        <h4>{p.title}</h4><p className="plan-goal">{p.goal}</p>
+        {p.personal.length > 0 && <><p className="plan-label">How you can do this — based on what I’ve noticed about you</p><ul className="plan-personal">{p.personal.map(x => <li key={x}>{x}</li>)}</ul></>}
+        <p className="plan-label">Step by step</p><ol className="plan-steps">{p.steps.map(st => <li key={st}>{st}</li>)}</ol>
+        <p className="plan-why"><strong>Why this was suggested: </strong>{p.why}</p><p className="plan-meta"><strong>When:</strong> {p.when}</p><p className="plan-meta"><strong>How you’ll know it’s working:</strong> {p.check}</p>
       </article>)}</div> : <p className="muted">Your action plan appears after at least 5 check-ins.</p>}
     </section>
     <section className="surface"><div className="panel-title"><div><h3>Trends over time</h3><p>Last 4 weeks of check-ins, compared week to week ({report.days} check-ins total)</p></div><Brain size={18} className="text-primary"/></div>
