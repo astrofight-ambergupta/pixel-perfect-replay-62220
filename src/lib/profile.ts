@@ -1,4 +1,5 @@
 import { resetSessionIfNew } from './session';
+import { activeAccountId, stashActive } from './accounts';
 import { useEffect, useState } from 'react';
 
 export type Profile = { name: string; birthDate: string; gender: string; checkInTime: string; missionStart: string; onboardedAt?: string };
@@ -20,13 +21,14 @@ export function validateProfile(p: Profile, today: string): Partial<Record<keyof
 export function initials(name: string) { return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase()).join('') || '··'; }
 export function saveProfile(p: Profile | null) {
   if (p) localStorage.setItem(KEY, JSON.stringify(p)); else localStorage.removeItem(KEY);
+  stashActive();
   window.dispatchEvent(new Event(EVENT));
 }
 export function useProfile() {
   const [state, setState] = useState<{ ready: boolean; profile: Profile | null }>({ ready: false, profile: null });
   useEffect(() => {
     resetSessionIfNew();
-    const read = () => { let profile: Profile | null = null; try { profile = JSON.parse(localStorage.getItem(KEY) || 'null'); if (profile && !profile.checkInTime) profile = { ...profile, checkInTime: '20:00' }; if (profile && !profile.missionStart) profile = null; } catch {} setState({ ready: true, profile }); };
+    const read = () => { let profile: Profile | null = null; try { profile = activeAccountId() ? JSON.parse(localStorage.getItem(KEY) || 'null') : null; if (profile && !profile.checkInTime) profile = { ...profile, checkInTime: '20:00' }; if (profile && !profile.missionStart) profile = null; } catch {} setState({ ready: true, profile }); };
     read(); window.addEventListener(EVENT, read); return () => window.removeEventListener(EVENT, read);
   }, []);
   return state;

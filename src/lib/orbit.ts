@@ -1,3 +1,4 @@
+import { voiceDbName } from './accounts';
 import { useEffect, useState } from 'react';
 
 export type JournalKind = 'official' | 'supplementary';
@@ -49,7 +50,7 @@ export function useJournals() {
 }
 function openVoiceDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open('orbit-voice-v1', 1);
+    const request = indexedDB.open(voiceDbName(), 1);
     request.onupgradeneeded = () => request.result.createObjectStore('notes', { keyPath: 'id' });
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);

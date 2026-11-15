@@ -240,3 +240,9 @@ button,a,input,textarea,select { -webkit-tap-highlight-color: transparent; }
 .onboard-hint{font-size:11px;color:var(--muted-foreground)}
 .baseline-progress,.companion-grid>.surface{padding:20px 22px}
 .inline-pill{font-size:11px;border-radius:99px;padding:3px 10px;background:var(--muted);color:var(--muted-foreground);white-space:nowrap;align-self:flex-start}.inline-pill.is-good{background:var(--mint-soft);color:var(--primary)}
+
+.account-list { display: grid; gap: .6rem; margin: 1rem 0; }
+.account-card, .account-chosen { display: flex; align-items: center; gap: .8rem; padding: .8rem 1rem; border: 1px solid var(--border); border-radius: 14px; background: var(--card); text-align: left; }
+.account-card { cursor: pointer; transition: border-color .2s, background .2s; }
+.account-card:hover, .account-card:focus-visible { border-color: var(--primary); background: var(--accent); }
+.account-card strong, .account-chosen strong { flex: 1; }
