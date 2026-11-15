@@ -63,7 +63,7 @@ export function deleteAccount(id: string) {
   window.dispatchEvent(new Event(ACCOUNT_EVENT)); window.dispatchEvent(new Event('orbit-profile-change'));
 }
 /** Testing reset: keep accounts and each account's profile; drop check-ins, voice, AI memory, reminders. */
-export function resetAccountData(keep = ['orbit-profile-v1']) {
+export function resetAccountData(keep = ['orbit-profile-v1', 'orbit-consent-v1']) {
   liveKeys().forEach(k => localStorage.removeItem(k));
   Object.keys(localStorage).filter(k => k.startsWith(VAULT)).forEach(k => {
     let v: Record<string, string> = {}; try { v = JSON.parse(localStorage.getItem(k) || '{}'); } catch {}

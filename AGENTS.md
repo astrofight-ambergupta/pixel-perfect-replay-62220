@@ -44,3 +44,4 @@ use the editor.
 - Device accounts (src/lib/accounts.ts) hold salted PBKDF2 password hashes; each account's data is vaulted and swapped into live keys on sign-in so accounts stay isolated. This is identity confirmation, not a security boundary.
 - Testing mode (TESTING_FRESH_SESSIONS in src/lib/session.ts) keeps accounts and profiles but wipes check-ins, voice, AI memory and reminders on each new browser session.
 - Dates derive from the profile's time zone via todayDate()/useToday() (built-in Intl data, offline); never use the raw device date.
+- Consent (src/lib/consent.ts) is versioned per account; bumping TERMS_VERSION re-prompts everyone. Escalation transmits only when escalationReadiness() is fully met, while the AI safety lock is independent of notification outcome.

@@ -246,3 +246,29 @@ button,a,input,textarea,select { -webkit-tap-highlight-color: transparent; }
 .account-card { cursor: pointer; transition: border-color .2s, background .2s; }
 .account-card:hover, .account-card:focus-visible { border-color: var(--primary); background: var(--accent); }
 .account-card strong, .account-chosen strong { flex: 1; }
+
+/* Terms & consent */
+.terms-card { max-width: 52rem; }
+.terms-scroll { max-height: 22rem; overflow-y: auto; border: 1px solid var(--border); border-radius: 1rem; padding: 0.5rem 1.25rem 1.25rem; background: var(--card); }
+.terms-doc p { margin: 0.4rem 0; line-height: 1.6; color: var(--muted-foreground); }
+.terms-risk, .terms-sharing { margin-top: 1.25rem; border-radius: 1rem; padding: 1.25rem; border: 1px solid var(--primary); background: color-mix(in oklab, var(--primary) 7%, var(--card)); }
+.terms-sharing { border-color: var(--border); background: var(--secondary); text-align: left; }
+.terms-risk-head { display: flex; align-items: center; gap: 0.6rem; color: var(--primary); margin-bottom: 0.5rem; }
+.terms-risk-head h3 { font-weight: 600; font-size: 1.05rem; color: var(--foreground); }
+.terms-risk ol { list-style: decimal; padding-left: 1.25rem; display: grid; gap: 0.4rem; line-height: 1.55; }
+.terms-tiers { display: grid; gap: 0.5rem; margin: 0.5rem 0 0.9rem; }
+.terms-tiers li { display: grid; gap: 0.15rem; padding: 0.6rem 0.8rem; border-radius: 0.7rem; background: var(--card); border: 1px solid var(--border); }
+.terms-note { font-weight: 600; color: var(--foreground) !important; margin-top: 0.8rem !important; }
+.terms-sharing dl { display: grid; grid-template-columns: minmax(8rem, 12rem) 1fr; gap: 0.5rem 1rem; font-size: 0.92rem; }
+.terms-sharing dt { font-weight: 600; } .terms-sharing dd { color: var(--muted-foreground); }
+@media (max-width: 640px) { .terms-sharing dl { grid-template-columns: 1fr; } .terms-sharing dd { margin-bottom: 0.4rem; } }
+.terms-accept { display: grid; gap: 0.9rem; margin-top: 1.25rem; text-align: left; }
+.terms-check { display: flex; gap: 0.7rem; align-items: flex-start; cursor: pointer; line-height: 1.5; }
+.terms-check button { margin-top: 0.2rem; flex-shrink: 0; }
+.terms-link { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--primary); text-decoration: underline; font-size: 0.9rem; justify-self: start; }
+.consent-records { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+.consent-records div { display: grid; gap: 0.2rem; padding: 0.8rem 1rem; border-radius: 0.8rem; border: 1px solid var(--border); }
+.consent-records span { font-size: 0.8rem; color: var(--muted-foreground); }
+.readiness { display: grid; gap: 0.4rem; margin-top: 0.6rem; }
+.readiness li { display: flex; align-items: center; gap: 0.6rem; color: var(--muted-foreground); }
+.readiness li.ok { color: var(--primary); } .readiness em { margin-left: auto; font-style: normal; font-size: 0.85rem; }

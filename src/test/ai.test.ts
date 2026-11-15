@@ -41,7 +41,8 @@ describe('analysis honesty', () => {
 });
 describe('escalation', () => {
   it('never confirms a professional takeover in simulation', () => {
-    let e = flag(emptyEscalation, 'test', '2026-11-15T00:00:00Z'); e = retry(e, '2026-11-15T00:05:00Z');
+    const R = { terms: true, sharing: true, professional: true, service: true };
+    let e = flag(emptyEscalation, 'test', '2026-11-15T00:00:00Z', R); e = retry(e, '2026-11-15T00:05:00Z', R);
     const c = confirmTakeover(e, { channel: 'secure-ground-link', professionalId: 'x', signature: 'y' }, '2026-11-15T00:10:00Z');
     expect(c.stage).toBe('awaiting'); expect(aiAdvicePaused(c)).toBe(true);
   });

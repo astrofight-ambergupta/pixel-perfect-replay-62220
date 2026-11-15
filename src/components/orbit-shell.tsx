@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react';
 import { Activity, ArrowUpRight, LogOut, Bell, Bot, BookOpen, ChevronDown, CircleHelp, LayoutDashboard, Menu, Mic, Orbit, Radio, Settings2, ShieldCheck, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { OrbitOnboarding } from './orbit-onboarding';
+import { TermsScreen, useConsent } from './orbit-terms';
+import { activeAccountId } from '@/lib/accounts';
+import { needsConsent } from '@/lib/consent';
 import { signOut } from '@/lib/accounts';
 import { initials, useProfile } from '@/lib/profile';
 import { scheduleDailyReminder } from '@/lib/reminders';
@@ -27,7 +30,9 @@ export function OrbitShell({ children }: { children: React.ReactNode }) {
   useEffect(() => setOpen(false), [path]);
   const { ready, profile } = useProfile();
   useEffect(() => { if (!profile) return; return scheduleDailyReminder(profile, () => { try { return (JSON.parse(localStorage.getItem('orbit-journals-v1') || '[]') as { kind?: 'official' | 'supplementary'; date: string }[]).some(e => isOfficial(e as never) && e.date === todayDate()); } catch { return false; } }); }, [profile?.checkInTime]);
-  if (!ready) return <div className="onboard-screen" />;
+  const { consent, ready: cReady } = useConsent();
+  if (!ready || !cReady) return <div className="onboard-screen" />;
+  if (activeAccountId() && needsConsent(consent)) return <TermsScreen />;
   if (!profile) return <OrbitOnboarding />;
   const ini = initials(profile.name);
   return <div className="app-layout">
